@@ -25,9 +25,10 @@ The application serves two core goals:
 
 ### ✳️ Features
 
+- **Public Startups Feed** (`/startups`) - Browse all public startups with ratings and creator info
 - Secure login (multi-user ready, with private dashboards)
 - Add, edit, and delete your own startup listings
-- Rate each startup across 6 dimensions:
+- Rate each startup across 6 dimensions (1-5 scale):
   - Market & Demand
   - Solution & Execution
   - Team & Founders
