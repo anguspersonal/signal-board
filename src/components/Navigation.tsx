@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { createBrowserClient } from '@supabase/ssr'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { 
@@ -26,13 +27,44 @@ import { ThemeToggle } from './theme-toggle'
 export function Navigation() {
   const router = useRouter()
   const [notifications, setNotifications] = useState(3) // Mock notification count
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   
   // Mock user data
   const user = { name: 'Alex Chen', email: 'alex@example.com' }
 
-  const handleSignOut = () => {
-    router.push('/')
+  const handleSignOut = async () => {
+    console.log('🚪 [NAVIGATION] Navigation logout button clicked')
+    console.log('🚪 [NAVIGATION] Current user:', user)
+    console.log('🚪 [NAVIGATION] Setting logout loading state to true')
+    setIsLoggingOut(true)
+    
+    try {
+      console.log('🚪 [NAVIGATION] Creating Supabase browser client')
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      
+      console.log('🚪 [NAVIGATION] Calling supabase.auth.signOut()')
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) {
+        console.error('🚪 [NAVIGATION] Supabase signOut error:', error)
+        throw error
+      }
+      
+      console.log('🚪 [NAVIGATION] Supabase signOut successful')
+      console.log('🚪 [NAVIGATION] Redirecting to home page')
+      router.push('/')
+      console.log('🚪 [NAVIGATION] Router.push to / called successfully')
+    } catch (error) {
+      console.error('🚪 [NAVIGATION] Unexpected error during logout:', error)
+    } finally {
+      console.log('🚪 [NAVIGATION] Setting logout loading state to false')
+      setIsLoggingOut(false)
+      console.log('🚪 [NAVIGATION] Logout process completed')
+    }
   }
 
   const handleNotificationClick = () => {
@@ -157,9 +189,9 @@ export function Navigation() {
                   <span>Profile</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
+                <DropdownMenuItem onClick={handleSignOut} disabled={isLoggingOut}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
+                  <span>{isLoggingOut ? 'Signing out...' : 'Log out'}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
