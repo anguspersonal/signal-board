@@ -22,10 +22,10 @@ function AuthCallbackContent() {
         const { data: { user } } = await supabase.auth.getUser()
         
         if (user) {
-          console.log('User already authenticated, redirecting to startups')
+          console.log('User already authenticated, redirecting to dashboard')
           // Clean up the URL by removing query string before redirect
-          window.history.replaceState({}, '', '/startups')
-          router.replace('/startups')
+          window.history.replaceState({}, '', '/dashboard')
+          router.replace('/dashboard')
           return
         }
 
@@ -52,9 +52,9 @@ function AuthCallbackContent() {
         if (data.session) {
           console.log('Authentication successful')
           // Clean up the URL by removing query string before redirect
-          window.history.replaceState({}, '', '/startups')
-          // Redirect to startups page after successful authentication
-          router.replace('/startups')
+          window.history.replaceState({}, '', '/dashboard')
+          // Redirect to dashboard page after successful authentication
+          router.replace('/dashboard')
         } else {
           setError('No session created')
           setIsLoading(false)

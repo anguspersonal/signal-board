@@ -36,9 +36,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  // If accessing login page while authenticated, redirect to startups
+  // If accessing login page while authenticated, redirect to dashboard
   if (user && request.nextUrl.pathname === '/login') {
-    const redirectUrl = new URL('/startups', request.url)
+    const redirectUrl = new URL('/dashboard', request.url)
     return NextResponse.redirect(redirectUrl)
   }
 
