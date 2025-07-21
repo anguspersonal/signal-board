@@ -20,8 +20,8 @@ export default async function StartupsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Startup Signalboard</h1>
-            <p className="mt-2 text-gray-600">Discover and evaluate early-stage startups</p>
+            <h1 className="text-3xl font-bold text-gray-900">StartIn</h1>
+            <p className="mt-2 text-gray-600">The LinkedIn for startups</p>
           </div>
           <UserMenu userEmail={user.email!} />
         </div>
