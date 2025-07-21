@@ -1,304 +1,268 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { redirect } from 'next/navigation'
-import { createBrowserSupabaseClient } from '@/lib/supabase-client'
-import { getUserStartups } from '@/lib/startups-client'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Search, Filter, Plus, Bookmark } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { Users, TrendingUp, Shield, Network } from 'lucide-react'
+import { createBrowserClient } from '@supabase/ssr'
 
-
-interface StartupWithRatings {
-  id: string
-  user_id: string
-  name: string
-  description: string
-  tags?: string[]
-  logo_url?: string
-  website_url?: string
-  visibility: 'private' | 'invite-only' | 'public'
-  created_at: string
-  updated_at: string
-  avg_rating?: number
-  user_ratings?: Array<{ id: string; rating: number; comment?: string; user_id: string }>
-  saved?: boolean
-  users?: { name: string; email: string }
-}
-
-import { Navigation } from '@/components/Navigation'
-
-const StartupCard = ({ startup, showOwner = false, onUpdate }: { 
-  startup: StartupWithRatings, 
-  showOwner?: boolean, 
-  onUpdate: () => void 
-}) => (
-  <div className="bg-white rounded-lg border p-6 hover:shadow-md transition-shadow">
-    <div className="flex justify-between items-start mb-4">
-      <h3 className="text-lg font-semibold text-gray-900">{startup.name}</h3>
-      <div className="flex items-center space-x-1 bg-blue-50 px-2 py-1 rounded-full">
-        <span className="text-sm font-medium text-blue-700">
-          {startup.avg_rating || 0}/5
-        </span>
-      </div>
-    </div>
-    <p className="text-gray-600 text-sm mb-4">{startup.description}</p>
-    {startup.tags && startup.tags.length > 0 && (
-      <div className="flex flex-wrap gap-1 mb-4">
-        {startup.tags.map(tag => (
-          <Badge key={tag} variant="outline" className="text-xs">
-            {tag}
-          </Badge>
-        ))}
-      </div>
-    )}
-    <div className="flex justify-between items-center">
-      {showOwner && startup.users && (
-        <div className="text-sm text-gray-500">
-          by <span className="font-medium text-gray-700">{startup.users.name}</span>
-        </div>
-      )}
-      <Button size="sm" onClick={onUpdate}>View Details</Button>
-    </div>
-  </div>
-)
-
-const EmptyState = ({ 
-  title, 
-  description, 
-  actionLabel, 
-  onAction 
-}: { 
-  title: string, 
-  description: string, 
-  actionLabel: string, 
-  onAction: () => void 
-}) => (
-  <div className="text-center py-12">
-    <div className="text-gray-500 text-lg mb-2">{title}</div>
-    <p className="text-gray-400 mb-4">{description}</p>
-    <Button onClick={onAction}>{actionLabel}</Button>
-  </div>
-)
-
-export default function Dashboard() {
+export default function Home() {
   const router = useRouter()
-  const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
-  const [startups, setStartups] = useState<StartupWithRatings[]>([])
-  const [savedStartups, setSavedStartups] = useState<StartupWithRatings[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [allTags, setAllTags] = useState<string[]>([])
+  const [isLogin, setIsLogin] = useState(true)
+  const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+  const [magicLinkSent, setMagicLinkSent] = useState(false)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
+  // Check authentication status on component mount
   useEffect(() => {
-    const checkAuthAndLoadData = async () => {
+    const checkAuth = async () => {
       try {
-        const supabase = createBrowserSupabaseClient()
-        const { data: { user } } = await supabase.auth.getUser()
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        )
+
+        // Check if there's a code parameter in the URL (magic link)
+        const urlParams = new URLSearchParams(window.location.search)
+        const code = urlParams.get('code')
         
-        if (!user) {
-          redirect('/login')
+        if (code) {
+          // Redirect to auth callback to handle the magic link
+          router.replace(`/auth/callback?code=${code}`)
+          return
         }
 
-        setUser(user)
-
-        // Load user's startups
-        const userStartups = await getUserStartups(user.id)
-        const formattedStartups: StartupWithRatings[] = userStartups.map(startup => ({
-          id: startup.id,
-          user_id: user.id,
-          name: startup.name,
-          description: startup.description,
-          tags: [], // You can add tags later
-          visibility: 'public' as const,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          avg_rating: startup.average_score
-        }))
-
-        setStartups(formattedStartups)
+        const { data: { user } } = await supabase.auth.getUser()
         
-        // Extract unique tags from startups
-        const tags = new Set<string>()
-        formattedStartups.forEach(startup => {
-          startup.tags?.forEach(tag => tags.add(tag))
-        })
-        setAllTags(Array.from(tags))
-
-        // For now, saved startups are empty - you can implement this later
-        setSavedStartups([])
-        
+        if (user) {
+          // User is authenticated, redirect to dashboard
+          router.replace('/dashboard')
+        }
       } catch (error) {
-        console.error('Error loading dashboard data:', error)
+        console.error('Error checking authentication:', error)
       } finally {
-        setLoading(false)
+        setIsCheckingAuth(false)
       }
     }
 
-    checkAuthAndLoadData()
-  }, [])
+    checkAuth()
+  }, [router])
 
-  const filteredStartups = startups.filter(startup => {
-    const matchesSearch = startup.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         startup.description.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesTags = selectedTags.length === 0 || 
-                       selectedTags.some(tag => startup.tags?.includes(tag))
-    return matchesSearch && matchesTags
-  })
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setMessage('')
 
-  const filteredSavedStartups = savedStartups.filter(startup => {
-    const matchesSearch = startup.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         startup.description.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesSearch
-  })
+    try {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
 
-  if (loading) {
+      // Handle magic link authentication
+      const { error } = await supabase.auth.signInWithOtp({ 
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
+      })
+
+      if (error) {
+        setMessage(error.message)
+        setMagicLinkSent(false)
+      } else {
+        setMessage('Check your email for a login link.')
+        setMagicLinkSent(true)
+        setEmail('')
+      }
+    } catch {
+      setMessage('An error occurred. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+  // Show loading while checking authentication
+  if (isCheckingAuth) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-sm text-slate-600">Loading dashboard...</p>
+          <p className="mt-4 text-sm text-slate-600">Loading...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Navigation />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-8">
-          {/* Header */}
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900">
-                Welcome back, {user?.email?.split('@')[0]}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="container mx-auto px-4 py-16">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Hero Section */}
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <h1 className="text-5xl font-bold text-slate-900 leading-tight">
+                Network-Driven
+                <span className="text-blue-600"> Startup Discovery</span>
               </h1>
-              <p className="text-slate-600 mt-1">
-                Manage your startup evaluations and discover new opportunities
+              <p className="text-xl text-slate-600 leading-relaxed">
+                A private platform for collaborators, investors, and advisors to showcase 
+                and discover promising startups through trusted networks.
               </p>
             </div>
-            <Button 
-              onClick={() => router.push('/startups/new')}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Startup
-            </Button>
+
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="flex items-start space-x-3">
+                <div className="bg-blue-100 p-2 rounded-lg">
+                  <Users className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900">Network Effects</h3>
+                  <p className="text-sm text-slate-600">Follow trusted advisors and discover startups through your network</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <div className="bg-green-100 p-2 rounded-lg">
+                  <TrendingUp className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900">6D Framework</h3>
+                  <p className="text-sm text-slate-600">Comprehensive evaluation across market, solution, team, and more</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <div className="bg-purple-100 p-2 rounded-lg">
+                  <Shield className="h-6 w-6 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900">Private & Secure</h3>
+                  <p className="text-sm text-slate-600">Multi-tenant isolation with granular sharing controls</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <div className="bg-orange-100 p-2 rounded-lg">
+                  <Network className="h-6 w-6 text-orange-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900">Collaboration</h3>
+                  <p className="text-sm text-slate-600">Share insights and collaborate with invited stakeholders</p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Search and Filters */}
-          <div className="bg-white rounded-lg shadow-sm border p-6 space-y-4">
-            <div className="flex gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
-                <Input
-                  placeholder="Search startups..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Button variant="outline">
-                <Filter className="h-4 w-4 mr-2" />
-                Filters
-              </Button>
+          {/* Auth Form */}
+          <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-bold text-slate-900">
+                {isLogin ? 'Welcome Back' : 'Get Started'}
+              </h2>
+              <p className="text-slate-600">
+                {isLogin 
+                  ? 'Sign in to access your startup portfolio'
+                  : 'Join the network of startup evaluators'
+                }
+              </p>
             </div>
 
-            {allTags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {allTags.map(tag => (
-                  <Badge
-                    key={tag}
-                    variant={selectedTags.includes(tag) ? "default" : "outline"}
-                    className="cursor-pointer"
+            {magicLinkSent ? (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                    <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-slate-900 mb-2">Check your email</h3>
+                  <p className="text-sm text-slate-600 mb-4">
+                    We've sent a magic link to your email address. Click the link to sign in.
+                  </p>
+                  <button
+                    type="button"
                     onClick={() => {
-                      setSelectedTags(prev => 
-                        prev.includes(tag) 
-                          ? prev.filter(t => t !== tag)
-                          : [...prev, tag]
-                      )
+                      setMagicLinkSent(false)
+                      setMessage('')
                     }}
+                    className="text-sm text-blue-600 hover:text-blue-700 underline"
                   >
-                    {tag}
-                  </Badge>
-                ))}
+                    Send another link
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {!isLogin && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Full Name
+                    </label>
+                    <Input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Enter your full name"
+                      required={!isLogin}
+                      className="w-full"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Email Address
+                  </label>
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    required
+                    className="w-full"
+                  />
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  disabled={loading}
+                >
+                  {loading ? 'Processing...' : 'Send Magic Link'}
+                </Button>
+              </form>
+            )}
+
+            {!magicLinkSent && (
+              <div className="text-center">
+                <span className="text-slate-600">
+                  {isLogin ? "Don't have an account? " : "Already have an account? "}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsLogin(!isLogin)
+                    setMessage('')
+                  }}
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  {isLogin ? 'Sign up' : 'Sign in'}
+                </button>
+              </div>
+            )}
+
+            {message && !magicLinkSent && (
+              <div className="p-4 rounded-lg text-sm bg-red-50 text-red-700">
+                {message}
               </div>
             )}
           </div>
-
-          {/* Analytics Chart - Temporarily commented out
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Startup Performance Overview</h3>
-            <div className="h-64">
-              <ExampleChart />
-            </div>
-          </div>
-          */}
-
-          {/* Main Content */}
-          <Tabs defaultValue="my-startups" className="space-y-6">
-            <TabsList className="bg-white border">
-              <TabsTrigger value="my-startups">
-                My Startups ({startups.length})
-              </TabsTrigger>
-              <TabsTrigger value="saved">
-                <Bookmark className="h-4 w-4 mr-2" />
-                Saved ({savedStartups.length})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="my-startups">
-              {filteredStartups.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredStartups.map(startup => (
-                    <StartupCard 
-                      key={startup.id} 
-                      startup={startup}
-                      showOwner={false}
-                      onUpdate={() => router.push(`/startups/${startup.id}`)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title="No startups yet"
-                  description="Start building your portfolio by adding your first startup evaluation."
-                  actionLabel="Add Startup"
-                  onAction={() => router.push('/startups/new')}
-                />
-              )}
-            </TabsContent>
-
-            <TabsContent value="saved">
-              {filteredSavedStartups.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredSavedStartups.map(startup => (
-                    <StartupCard 
-                      key={startup.id} 
-                      startup={startup}
-                      showOwner={true}
-                      onUpdate={() => router.push(`/startups/${startup.id}`)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title="No saved startups"
-                  description="Save startups from your network to keep track of interesting opportunities."
-                  actionLabel="Explore Network"
-                  onAction={() => router.push('/startups')}
-                />
-              )}
-            </TabsContent>
-          </Tabs>
         </div>
       </div>
     </div>
   )
-} 
+}
