@@ -44,7 +44,8 @@ export async function getUserStartups(userId: string): Promise<Startup[]> {
       id,
       name,
       description,
-      user_id
+      user_id,
+      website_url
     `)
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
@@ -71,7 +72,8 @@ export async function getUserStartups(userId: string): Promise<Startup[]> {
         name: startup.name,
         description: startup.description,
         creator_name: 'You',
-        average_score: averageScore
+        average_score: averageScore,
+        website_url: startup.website_url
       }
     })
   )
@@ -91,7 +93,8 @@ export async function getPublicStartups(): Promise<Startup[]> {
       id,
       name,
       description,
-      user_id
+      user_id,
+      website_url
     `)
     .eq('visibility', 'public')
     .order('created_at', { ascending: false })
@@ -120,7 +123,8 @@ export async function getPublicStartups(): Promise<Startup[]> {
         name: startup.name,
         description: startup.description,
         creator_name: 'Anonymous Creator', // We'll improve this later
-        average_score: averageScore
+        average_score: averageScore,
+        website_url: startup.website_url
       }
     })
   )
@@ -143,7 +147,8 @@ export async function getStartupById(id: string): Promise<Startup | null> {
       id,
       name,
       description,
-      user_id
+      user_id,
+      website_url
     `)
     .eq('id', id)
   
@@ -175,6 +180,7 @@ export async function getStartupById(id: string): Promise<Startup | null> {
     name: data.name,
     description: data.description,
     creator_name: user && data.user_id === user.id ? 'You' : 'Anonymous Creator',
-    average_score: averageScore
+    average_score: averageScore,
+    website_url: data.website_url
   }
 } 

@@ -3,6 +3,7 @@ export interface StartupData {
   name: string
   description: string
   user_id: string
+  website_url?: string
 }
 
 export interface Startup {
@@ -11,6 +12,7 @@ export interface Startup {
   description: string
   creator_name: string
   average_score: number
+  website_url?: string
 }
 
 export interface StartupRating {

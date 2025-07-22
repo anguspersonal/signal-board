@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Search, Filter, Plus, Bookmark } from 'lucide-react'
+import { Search, Filter, Plus, Bookmark, ExternalLink } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 
@@ -38,8 +38,11 @@ const StartupCard = ({ startup, showOwner = false, onUpdate }: {
   onUpdate: () => void 
 }) => (
   <div className="bg-white rounded-lg border p-6 hover:shadow-md transition-shadow">
-    <div className="flex justify-between items-start mb-4">
-      <h3 className="text-lg font-semibold text-gray-900">{startup.name || 'Unnamed Startup'}</h3>
+        <div className="flex justify-between items-start mb-4">
+      <div className="flex items-center space-x-2">
+        <h3 className="text-lg font-semibold text-gray-900">{startup.name || 'Unnamed Startup'}</h3>
+        <ExternalLink className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
+      </div>
       <div className="flex items-center space-x-1 bg-blue-50 px-2 py-1 rounded-full">
         <span className="text-sm font-medium text-blue-700">
           {startup.avg_rating || 0}/5
@@ -120,6 +123,7 @@ export default function Dashboard() {
           name: startup.name || 'Unnamed Startup',
           description: startup.description || 'No description available',
           tags: [], // You can add tags later
+          website_url: startup.website_url,
           visibility: 'public' as const,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),

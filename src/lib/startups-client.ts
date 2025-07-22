@@ -44,7 +44,8 @@ export async function getUserStartups(userId: string): Promise<Startup[]> {
       id,
       name,
       description,
-      user_id
+      user_id,
+      website_url
     `)
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
@@ -71,7 +72,8 @@ export async function getUserStartups(userId: string): Promise<Startup[]> {
         name: startup.name,
         description: startup.description,
         creator_name: 'You',
-        average_score: averageScore
+        average_score: averageScore,
+        website_url: startup.website_url
       }
     })
   )
