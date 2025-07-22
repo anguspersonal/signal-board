@@ -13,7 +13,22 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 export function ThemeToggle() {
-  const { setTheme } = useTheme()
+  const { setTheme, theme, resolvedTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
+
+  // Prevent hydration mismatch
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <Button variant="outline" size="sm" className="h-9 w-9 p-0">
+        <Sun className="h-[1.2rem] w-[1.2rem]" />
+        <span className="sr-only">Toggle theme</span>
+      </Button>
+    )
+  }
 
   return (
     <DropdownMenu>
@@ -25,13 +40,37 @@ export function ThemeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme('light')}>
+        <DropdownMenuItem 
+          onClick={() => {
+            try {
+              setTheme('light')
+            } catch (error) {
+              console.error('Error setting light theme:', error)
+            }
+          }}
+        >
           Light
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('dark')}>
+        <DropdownMenuItem 
+          onClick={() => {
+            try {
+              setTheme('dark')
+            } catch (error) {
+              console.error('Error setting dark theme:', error)
+            }
+          }}
+        >
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('system')}>
+        <DropdownMenuItem 
+          onClick={() => {
+            try {
+              setTheme('system')
+            } catch (error) {
+              console.error('Error setting system theme:', error)
+            }
+          }}
+        >
           System
         </DropdownMenuItem>
       </DropdownMenuContent>

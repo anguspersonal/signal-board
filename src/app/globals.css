@@ -3,6 +3,15 @@
 @tailwind utilities;
 
 @layer base {
+  /* Prevent flash of unstyled content */
+  html {
+    color-scheme: light;
+  }
+  
+  html.dark {
+    color-scheme: dark;
+  }
+  
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
