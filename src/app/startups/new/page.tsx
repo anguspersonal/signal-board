@@ -10,7 +10,7 @@ export default async function NewStartupPage() {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   
   if (authError || !user) {
-    redirect('/login')
+    redirect('/')
   }
 
   return (

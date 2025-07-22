@@ -32,10 +32,10 @@ function AuthCallbackContent() {
         const code = searchParams.get('code')
         
         if (!code) {
-          console.log('No authentication code found, redirecting to login')
+          console.log('No authentication code found, redirecting to home')
           // Clean up the URL by removing query string before redirect
-          window.history.replaceState({}, '', '/login')
-          router.replace('/login')
+          window.history.replaceState({}, '', '/')
+          router.replace('/')
           return
         }
 
@@ -105,7 +105,7 @@ function AuthCallbackContent() {
                   Go to Home
                 </button>
                 <button
-                  onClick={() => router.push('/login')}
+                  onClick={() => router.push('/')}
                   className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Try Again

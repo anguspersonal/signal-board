@@ -30,15 +30,9 @@ export async function middleware(request: NextRequest) {
   // Refresh session if expired - required for Server Components
   const { data: { user } } = await supabase.auth.getUser()
 
-  // If accessing protected routes without authentication, redirect to login
+  // If accessing protected routes without authentication, redirect to home
   if (!user && request.nextUrl.pathname.startsWith('/startups')) {
-    const redirectUrl = new URL('/login', request.url)
-    return NextResponse.redirect(redirectUrl)
-  }
-
-  // If accessing login page while authenticated, redirect to dashboard
-  if (user && request.nextUrl.pathname === '/login') {
-    const redirectUrl = new URL('/dashboard', request.url)
+    const redirectUrl = new URL('/', request.url)
     return NextResponse.redirect(redirectUrl)
   }
 
