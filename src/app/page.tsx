@@ -116,7 +116,7 @@ export default function Home() {
                 <span className="text-blue-600"> Startup Discovery</span>
               </h1>
               <p className="text-xl text-slate-600 leading-relaxed">
-                A private platform for evaluators, investors, and advisors to showcase 
+                A private platform for contributors, investors, and advisors to showcase 
                 and discover promising startups through trusted networks.
               </p>
             </div>
@@ -173,7 +173,7 @@ export default function Home() {
               <p className="text-slate-600">
                 {isLogin 
                   ? 'Sign in to access your startup portfolio'
-                  : 'Join the network of startup evaluators'
+                  : 'Join the network of startup operators'
                 }
               </p>
             </div>
