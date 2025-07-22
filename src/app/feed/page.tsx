@@ -13,7 +13,7 @@ import { Search, Filter, TrendingUp, Users, Heart, MessageCircle, Bookmark } fro
 interface ActivityItem {
   id: string
   user: { name: string; email: string }
-  startup: { id: string; name: string; description: string; tags: string[]; avg_rating: number }
+  startup: { id: string; name?: string; description?: string; tags: string[]; avg_rating: number }
   type: 'rated' | 'commented' | 'saved' | 'interested'
   timestamp: string
   content?: string
@@ -204,7 +204,7 @@ export default function Feed() {
                           <span className="text-sm text-slate-600">
                             <span className="font-medium text-slate-900">{activity.user.name}</span>
                             {' '}{getActivityText(activity)}{' '}
-                            <span className="font-medium text-slate-900">{activity.startup.name}</span>
+                            <span className="font-medium text-slate-900">{activity.startup.name || 'Unnamed Startup'}</span>
                           </span>
                           <span className="text-xs text-slate-400">•</span>
                           <span className="text-xs text-slate-400">{activity.timestamp}</span>
@@ -213,8 +213,8 @@ export default function Feed() {
                         <div className="bg-slate-50 rounded-lg p-4">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <h3 className="font-medium text-slate-900 mb-1">{activity.startup.name}</h3>
-                              <p className="text-sm text-slate-600 mb-2">{activity.startup.description}</p>
+                              <h3 className="font-medium text-slate-900 mb-1">{activity.startup.name || 'Unnamed Startup'}</h3>
+                              <p className="text-sm text-slate-600 mb-2">{activity.startup.description || 'No description available'}</p>
                               <div className="flex flex-wrap gap-1">
                                 {activity.startup.tags.map((tag: string) => (
                                   <Badge key={tag} variant="outline" className="text-xs">

@@ -40,7 +40,7 @@ export default async function StartupsPage() {
               >
                 <div className="flex justify-between items-start mb-4">
                   <h2 className="text-xl font-semibold text-gray-900 line-clamp-2">
-                    {startup.name}
+                    {startup.name || 'Unnamed Startup'}
                   </h2>
                   <div className="flex items-center space-x-1 bg-blue-50 px-2 py-1 rounded-full">
                     <span className="text-sm font-medium text-blue-700">
@@ -50,7 +50,7 @@ export default async function StartupsPage() {
                 </div>
 
                 <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                  {startup.description}
+                  {startup.description || 'No description available'}
                 </p>
 
                 <div className="flex justify-between items-center">

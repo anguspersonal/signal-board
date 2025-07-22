@@ -28,8 +28,8 @@ import {
 interface StartupWithRatings {
   id: string
   user_id: string
-  name: string
-  description: string
+  name?: string
+  description?: string
   tags: string[]
   logo_url: string
   website_url: string
@@ -108,7 +108,7 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
             {startup.logo_url ? (
               <Image 
                 src={startup.logo_url} 
-                alt={startup.name}
+                alt={startup.name || 'Startup'}
                 width={48}
                 height={48}
                 className="rounded-lg object-cover"
@@ -116,12 +116,12 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
             ) : (
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">
-                  {startup.name.charAt(0).toUpperCase()}
+                  {(startup.name || 'S').charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <CardTitle className="text-lg truncate">{startup.name}</CardTitle>
+              <CardTitle className="text-lg truncate">{startup.name || 'Unnamed Startup'}</CardTitle>
               {showOwner && startup.users && (
                 <div className="flex items-center space-x-2 mt-1">
                   <Avatar className="h-4 w-4">

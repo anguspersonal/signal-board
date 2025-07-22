@@ -15,8 +15,8 @@ import { useRouter } from 'next/navigation'
 interface StartupWithRatings {
   id: string
   user_id: string
-  name: string
-  description: string
+  name?: string
+  description?: string
   tags?: string[]
   logo_url?: string
   website_url?: string
@@ -38,14 +38,14 @@ const StartupCard = ({ startup, showOwner = false, onUpdate }: {
 }) => (
   <div className="bg-white rounded-lg border p-6 hover:shadow-md transition-shadow">
     <div className="flex justify-between items-start mb-4">
-      <h3 className="text-lg font-semibold text-gray-900">{startup.name}</h3>
+      <h3 className="text-lg font-semibold text-gray-900">{startup.name || 'Unnamed Startup'}</h3>
       <div className="flex items-center space-x-1 bg-blue-50 px-2 py-1 rounded-full">
         <span className="text-sm font-medium text-blue-700">
           {startup.avg_rating || 0}/5
         </span>
       </div>
     </div>
-    <p className="text-gray-600 text-sm mb-4">{startup.description}</p>
+    <p className="text-gray-600 text-sm mb-4">{startup.description || 'No description available'}</p>
     {startup.tags && startup.tags.length > 0 && (
       <div className="flex flex-wrap gap-1 mb-4">
         {startup.tags.map(tag => (
@@ -111,8 +111,8 @@ export default function Dashboard() {
         const formattedStartups: StartupWithRatings[] = userStartups.map(startup => ({
           id: startup.id,
           user_id: user.id,
-          name: startup.name,
-          description: startup.description,
+          name: startup.name || 'Unnamed Startup',
+          description: startup.description || 'No description available',
           tags: [], // You can add tags later
           visibility: 'public' as const,
           created_at: new Date().toISOString(),
@@ -143,16 +143,16 @@ export default function Dashboard() {
   }, [])
 
   const filteredStartups = startups.filter(startup => {
-    const matchesSearch = startup.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         startup.description.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = (startup.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                         (startup.description?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     const matchesTags = selectedTags.length === 0 || 
                        selectedTags.some(tag => startup.tags?.includes(tag))
     return matchesSearch && matchesTags
   })
 
   const filteredSavedStartups = savedStartups.filter(startup => {
-    const matchesSearch = startup.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         startup.description.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = (startup.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                         (startup.description?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     return matchesSearch
   })
 
