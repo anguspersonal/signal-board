@@ -22,7 +22,7 @@ export default function UserMenu({ userEmail }: UserMenuProps) {
       )
       
       await supabase.auth.signOut()
-      router.push('/login')
+      router.push('/')
     } catch (error) {
       console.error('Logout error:', error)
     } finally {

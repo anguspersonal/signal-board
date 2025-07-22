@@ -1,9 +1,9 @@
-# signal-board
-# 🔒 Startup Signalboard (Proprietary)
+# startin
+# 🔒 StartIn (Proprietary)
 
 ⚠️ **Legal Notice**: This is a proprietary project. All code is © Angus Hally and may not be reused, modified, or distributed without explicit written consent. See LICENSE for details.
 
-**Startup Signalboard** is a private, multi-tenant application designed to help trusted startup collaborators, advisors, and scouts evaluate, share, and engage with early-stage startups.
+**StartIn** is a private, multi-tenant application designed to help trusted startup collaborators, advisors, and scouts evaluate, share, and engage with early-stage startups.
 
 > Built for personal use by [Angus Hally](https://www.angushally.com), this app powers dealflow visibility, startup evaluation, and networked discovery — all in one trusted space.
 
@@ -100,7 +100,7 @@ For collaboration inquiries, contact: `hello@angushally.com`
 
 ```bash
 git clone <private-repo-url>
-cd startup-signalboard
+cd startin
 npm install
 npm run dev
 

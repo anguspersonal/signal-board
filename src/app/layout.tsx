@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   title: "StartIn",
   description: "The LinkedIn for startups",
   icons: {
-    icon: "\AH-logo-no-background.ico",
-    apple: "\AH-logo-no-background.ico",
+    icon: "/AH-logo-no-background.ico",
+    apple: "/AH-logo-no-background.ico",
   },
 };
 

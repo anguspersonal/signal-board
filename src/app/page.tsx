@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Users, TrendingUp, Shield, Network } from 'lucide-react'
@@ -9,6 +10,7 @@ import { createBrowserClient } from '@supabase/ssr'
 
 export default function Home() {
   const router = useRouter()
+  const { setTheme } = useTheme()
   const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
@@ -16,6 +18,11 @@ export default function Home() {
   const [message, setMessage] = useState('')
   const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+
+  // Force light theme for this page
+  useEffect(() => {
+    setTheme('light')
+  }, [setTheme])
 
   // Check authentication status on component mount
   useEffect(() => {

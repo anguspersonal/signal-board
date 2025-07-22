@@ -101,7 +101,7 @@ export default function Dashboard() {
         const { data: { user } } = await supabase.auth.getUser()
         
         if (!user) {
-          redirect('/login')
+          redirect('/')
         }
 
         setUser(user)

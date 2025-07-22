@@ -10,7 +10,7 @@ export default async function StartupsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
-    redirect('/login')
+    redirect('/')
   }
 
   const startups = await getUserStartups(user.id)
