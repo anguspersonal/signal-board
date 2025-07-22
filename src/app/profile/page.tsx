@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
+import { User } from '@supabase/supabase-js'
 import { getUserProfile, updateUserProfile, ensureUserProfile, getDisplayName, UserProfile } from '@/lib/profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -30,7 +31,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   
