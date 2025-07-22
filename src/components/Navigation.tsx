@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
+import { getUserProfile, UserProfile, getDisplayName } from '@/lib/profile'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { 
@@ -28,10 +29,34 @@ export function Navigation() {
   const router = useRouter()
   const [notifications, setNotifications] = useState(3) // Mock notification count
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
 
-  
-  // Mock user data
-  const user = { name: 'Alex Chen', email: 'alex@example.com' }
+  // Load user data on component mount
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        )
+
+        const { data: { user } } = await supabase.auth.getUser()
+        
+        if (user) {
+          setUser(user)
+          
+          // Load user profile
+          const profile = await getUserProfile(user.id)
+          setUserProfile(profile)
+        }
+      } catch (error) {
+        console.error('Error loading user data in Navigation:', error)
+      }
+    }
+
+    loadUserData()
+  }, [])
 
   const handleSignOut = async () => {
     console.log('🚪 [NAVIGATION] Navigation logout button clicked')
@@ -166,7 +191,7 @@ export function Navigation() {
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-blue-100 text-blue-600">
-                      {user.name.split(' ').map(n => n[0]).join('')}
+                      {getDisplayName(userProfile, user?.email).split(' ').map((n: string) => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -174,9 +199,11 @@ export function Navigation() {
               
               <DropdownMenuContent className="w-56" align="end">
                 <div className="flex flex-col space-y-1 p-2">
-                  <p className="text-sm font-medium leading-none">{user.name}</p>
+                  <p className="text-sm font-medium leading-none">
+                    {getDisplayName(userProfile, user?.email)}
+                  </p>
                   <p className="text-xs leading-none text-gray-500">
-                    {user.email}
+                    {user?.email || 'No email'}
                   </p>
                 </div>
                 <DropdownMenuSeparator />

@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
+import { getUserProfile, updateUserProfile, ensureUserProfile, getDisplayName, UserProfile } from '@/lib/profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -18,7 +19,8 @@ import {
   Edit3,
   Save,
   X,
-  Activity
+  Activity,
+  AlertCircle
 } from 'lucide-react'
 import { Navigation } from '@/components/Navigation'
 
@@ -28,48 +30,118 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [user, setUser] = useState<any>(null)
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   
-  // Mock user data - in a real app, this would come from Supabase
+  // Extended user data for display
   const [userData, setUserData] = useState({
-    name: 'Alex Chen',
-    email: 'alex@example.com',
-    bio: 'Entrepreneur and startup enthusiast. Building the next big thing in fintech.',
-    location: 'San Francisco, CA',
-    website: 'https://alexchen.dev',
-    company: 'TechCorp',
-    joinedDate: '2023-01-15',
-    avatar_url: null
+    name: '',
+    email: '',
+    bio: '',
+    location: '',
+    website: '',
+    company: '',
+    joinedDate: '',
+    avatar_url: null as string | null
   })
 
   const [editData, setEditData] = useState({ ...userData })
 
+  // Check if user has a default/generated name
+  const hasDefaultName = (profile: UserProfile | null, email?: string): boolean => {
+    if (!profile?.name) return true
+    if (!email) return true
+    
+    const emailPart = email.split('@')[0]
+    const defaultName = emailPart.charAt(0).toUpperCase() + emailPart.slice(1).toLowerCase()
+    
+    return profile.name === defaultName || profile.name === 'New User'
+  }
+
+  // Load user and profile data on component mount
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        )
+
+        const { data: { user } } = await supabase.auth.getUser()
+        
+        if (!user) {
+          router.push('/')
+          return
+        }
+
+        setUser(user)
+
+        // Load user profile
+        const profile = await getUserProfile(user.id)
+        setUserProfile(profile)
+
+        // Set user data for display
+                 setUserData({
+           name: profile?.name || '',
+           email: user.email || '',
+           bio: '', // Not in our current schema, but could be added
+           location: '', // Not in our current schema, but could be added
+           website: '', // Not in our current schema, but could be added
+           company: '', // Not in our current schema, but could be added
+           joinedDate: profile?.created_at || '',
+           avatar_url: profile?.profile_pic_url || null
+         })
+
+                 setEditData({
+           name: profile?.name || '',
+           email: user.email || '',
+           bio: '',
+           location: '',
+           website: '',
+           company: '',
+           joinedDate: profile?.created_at || '',
+           avatar_url: profile?.profile_pic_url || null
+         })
+      } catch (error) {
+        console.error('Error loading user data:', error)
+        setError('Failed to load user data')
+      } finally {
+        setIsLoadingProfile(false)
+      }
+    }
+
+    loadUserData()
+  }, [router])
+
   const handleSave = async () => {
+    if (!user) {
+      setError('User not found')
+      return
+    }
+
     setIsLoading(true)
     setError('')
     setSuccess('')
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
+      // Update the profile in the database
+      const updatedProfile = await updateUserProfile(user.id, {
+        name: editData.name || null,
+        profile_pic_url: editData.avatar_url
+      })
 
-      // In a real app, you would update the user profile in Supabase
-      // const { error } = await supabase
-      //   .from('profiles')
-      //   .update(editData)
-      //   .eq('id', userId)
-
-      // For now, just simulate the update
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      setUserData({ ...editData })
-      setIsEditing(false)
-      setSuccess('Profile updated successfully!')
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccess(''), 3000)
+      if (updatedProfile) {
+        setUserProfile(updatedProfile)
+        setUserData({ ...editData })
+        setIsEditing(false)
+        setSuccess('Profile updated successfully!')
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccess(''), 3000)
+      } else {
+        setError('Failed to update profile. Please try again.')
+      }
     } catch (err) {
       console.error('Error updating profile:', err)
       setError('Failed to update profile. Please try again.')
@@ -89,6 +161,65 @@ export default function ProfilePage() {
       ...prev,
       [field]: value
     }))
+  }
+
+  // Show loading state while fetching profile data
+  if (isLoadingProfile) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading profile...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show profile creation prompt if no profile exists
+  if (!userProfile && user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="text-center">
+            <div className="bg-white rounded-lg shadow-sm border p-8 max-w-md mx-auto">
+              <h2 className="text-2xl font-bold text-foreground mb-4">Complete Your Profile</h2>
+              <p className="text-muted-foreground mb-6">
+                Welcome to StartIn! Let's set up your profile to get started.
+              </p>
+              <Button 
+                onClick={async () => {
+                  if (user) {
+                    const newProfile = await ensureUserProfile(user)
+                    if (newProfile) {
+                      setUserProfile(newProfile)
+                      setUserData(prev => ({
+                        ...prev,
+                        name: newProfile.name || '',
+                        joinedDate: newProfile.created_at
+                      }))
+                      setEditData(prev => ({
+                        ...prev,
+                        name: newProfile.name || '',
+                        joinedDate: newProfile.created_at
+                      }))
+                    }
+                  }
+                }}
+                className="w-full"
+              >
+                Set Up Profile
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -119,6 +250,21 @@ export default function ProfilePage() {
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md mb-6">
             {error}
+          </div>
+        )}
+
+        {/* Default Name Alert */}
+        {userProfile && hasDefaultName(userProfile, user?.email) && (
+          <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-md mb-6">
+            <div className="flex items-start">
+              <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Complete your profile</p>
+                <p className="text-sm mt-1">
+                  We've generated a name from your email. Please update it to your real name for a better experience.
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -177,7 +323,7 @@ export default function ProfilePage() {
                 <div className="flex items-start space-x-6">
                   <Avatar className="h-24 w-24">
                     <AvatarFallback className="bg-blue-100 text-blue-600 text-2xl">
-                      {userData.name.split(' ').map(n => n[0]).join('')}
+                      {getDisplayName(userProfile, user?.email).split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
                   

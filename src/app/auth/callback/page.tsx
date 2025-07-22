@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
+import { ensureUserProfile } from '@/lib/profile'
 
 function AuthCallbackContent() {
   const router = useRouter()
@@ -51,6 +52,23 @@ function AuthCallbackContent() {
 
         if (data.session) {
           console.log('Authentication successful')
+          
+          // Ensure user profile exists in public.users table
+          if (data.session.user) {
+            try {
+              const profile = await ensureUserProfile(data.session.user)
+              if (profile) {
+                console.log('User profile ensured:', profile)
+              } else {
+                console.warn('Failed to create user profile, but continuing with auth')
+              }
+            } catch (profileError) {
+              console.error('Error ensuring user profile:', profileError)
+              // Don't fail the auth process if profile creation fails
+              // The user can still use the app and create their profile later
+            }
+          }
+          
           // Clean up the URL by removing query string before redirect
           window.history.replaceState({}, '', '/dashboard')
           // Redirect to dashboard page after successful authentication

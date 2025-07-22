@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { redirect } from 'next/navigation'
 import { createBrowserSupabaseClient } from '@/lib/supabase-client'
 import { getUserStartups } from '@/lib/startups-client'
+import { getUserProfile, UserProfile, getDisplayName } from '@/lib/profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -87,6 +88,7 @@ const EmptyState = ({
 export default function Dashboard() {
   const router = useRouter()
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [startups, setStartups] = useState<StartupWithRatings[]>([])
   const [savedStartups, setSavedStartups] = useState<StartupWithRatings[]>([])
   const [loading, setLoading] = useState(true)
@@ -105,6 +107,10 @@ export default function Dashboard() {
         }
 
         setUser(user)
+
+        // Load user's profile
+        const profile = await getUserProfile(user.id)
+        setUserProfile(profile)
 
         // Load user's startups
         const userStartups = await getUserStartups(user.id)
@@ -177,7 +183,7 @@ export default function Dashboard() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-slate-900">
-                Welcome back, {user?.email?.split('@')[0]}
+                Welcome back, {getDisplayName(userProfile, user?.email)}
               </h1>
               <p className="text-slate-600 mt-1">
                 Manage your startup evaluations and discover new opportunities
