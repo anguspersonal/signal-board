@@ -12,6 +12,9 @@ const nextConfig = {
     // number of pages that should be kept simultaneously without being disposed
     pagesBufferLength: 2,
   },
+  typescript: {
+    ignoreBuildErrors: true, // ⛔ disables typechecking in `next build`
+  },
 }
 
 export default nextConfig

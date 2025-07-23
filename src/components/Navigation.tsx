@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
-import { getUserProfile, UserProfile, getDisplayName } from '@/lib/profile'
+import { getDisplayName } from '@/lib/profile'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { 
@@ -14,92 +14,54 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { 
-  Home, 
-  Users, 
-  Activity, 
   Settings, 
   LogOut,
-  Search,
   Bell,
-  Plus
+  User
 } from 'lucide-react'
 import { ThemeToggle } from './theme-toggle'
+import { UserProfile } from '@/lib/profile'
+import { logger } from '@/lib/logger'
 
-export function Navigation() {
+interface NavigationProps {
+  user: { id: string; email?: string } | null
+  userProfile: UserProfile | null
+}
+
+export function Navigation({ user, userProfile }: NavigationProps) {
   const router = useRouter()
   const [notifications, setNotifications] = useState(3) // Mock notification count
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
-
-  // Load user data on component mount
-  useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        )
-
-        const { data: { user } } = await supabase.auth.getUser()
-        
-        if (user) {
-          setUser(user)
-          
-          // Load user profile
-          const profile = await getUserProfile(user.id)
-          setUserProfile(profile)
-        }
-      } catch (error) {
-        console.error('Error loading user data in Navigation:', error)
-      }
-    }
-
-    loadUserData()
-  }, [])
 
   const handleSignOut = async () => {
-    console.log('🚪 [NAVIGATION] Navigation logout button clicked')
-    console.log('🚪 [NAVIGATION] Current user:', user)
-    console.log('🚪 [NAVIGATION] Setting logout loading state to true')
+    logger.debug('Navigation logout button clicked', { userId: user?.id })
     setIsLoggingOut(true)
     
     try {
-      console.log('🚪 [NAVIGATION] Creating Supabase browser client')
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       )
       
-      console.log('🚪 [NAVIGATION] Calling supabase.auth.signOut()')
       const { error } = await supabase.auth.signOut()
       
       if (error) {
-        console.error('🚪 [NAVIGATION] Supabase signOut error:', error)
+        logger.error('Supabase signOut error', { error })
         throw error
       }
       
-      console.log('🚪 [NAVIGATION] Supabase signOut successful')
-      console.log('🚪 [NAVIGATION] Redirecting to home page')
+      logger.debug('Supabase signOut successful')
       router.push('/')
-      console.log('🚪 [NAVIGATION] Router.push to / called successfully')
     } catch (error) {
-      console.error('🚪 [NAVIGATION] Unexpected error during logout:', error)
+      logger.error('Unexpected error during logout', { error })
     } finally {
-      console.log('🚪 [NAVIGATION] Setting logout loading state to false')
       setIsLoggingOut(false)
-      console.log('🚪 [NAVIGATION] Logout process completed')
     }
   }
 
   const handleNotificationClick = () => {
     setNotifications(0) // Remove the red dot
     router.push('/feed') // Navigate to feed
-  }
-
-  const handleFeedClick = () => {
-    setNotifications(0) // Clear notifications when viewing feed
-    router.push('/feed')
   }
 
   return (
@@ -117,55 +79,12 @@ export function Navigation() {
               </div>
               <span className="text-xl font-bold text-foreground">StartIn</span>
             </div>
-
-            {/* Navigation Links */}
-            <div className="hidden md:flex items-center space-x-6">
-              <Button 
-                variant="ghost" 
-                className="text-muted-foreground hover:text-foreground"
-                onClick={() => router.push('/dashboard')}
-              >
-                <Home className="h-4 w-4 mr-2" />
-                Dashboard
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="text-muted-foreground hover:text-foreground"
-                onClick={handleFeedClick}
-              >
-                <Activity className="h-4 w-4 mr-2" />
-                Feed
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="text-muted-foreground hover:text-foreground"
-                onClick={() => router.push('/network')}
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Network
-              </Button>
-            </div>
           </div>
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
             {/* Theme Toggle */}
             <ThemeToggle />
-
-            {/* Search */}
-            <Button variant="ghost" size="sm" className="hidden sm:flex">
-              <Search className="h-4 w-4" />
-            </Button>
-
-            {/* Add Startup */}
-            <Button 
-              size="sm" 
-              className="bg-blue-600 hover:bg-blue-700"
-              onClick={() => router.push('/startups/new')}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Add Startup</span>
-            </Button>
 
             {/* Notifications */}
             <Button 
@@ -207,13 +126,13 @@ export function Navigation() {
                   </p>
                 </div>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push('/profile')}>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push('/settings')}>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/profile')}>
-                  <Users className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} disabled={isLoggingOut}>

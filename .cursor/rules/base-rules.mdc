@@ -1,0 +1,28 @@
+---
+alwaysApply: true
+---
+
+### 🛠 Cursor Base Instructions
+
+**App Summary:**
+You are working on **StartIn** — a private, multi-tenant web app that lets users evaluate and engage with early-stage startups. It includes startup listings, structured ratings, interest signals, and public comment threads. Auth is via Supabase; UI is built with Next.js, Tailwind, and shadcn/ui components.
+
+**Agent & File Management:**
+
+* **Agent mode is enabled.**
+* **Do not change file structure or create new folders** unless explicitly confirmed.
+* **Keep all components and utilities in their existing locations.**
+
+**Database Workflow:**
+
+* **Supabase GUI is used** for schema changes and migrations.
+* **Do not generate SQL migration files or modify `schema.sql`.**
+* Assume RLS is enforced and the schema is already deployed.
+
+**General Conventions:**
+
+* Use TypeScript and follow current component structure and styles.
+* Use `createClient` or `createBrowserClient` from `@/lib/supabase`.
+* Assume multi-tenant structure — all rows tied to `user_id`.
+
+---

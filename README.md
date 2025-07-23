@@ -40,13 +40,7 @@ The application serves two core goals:
 - Public activity feed of startups shared by other users
 - Profile-based attribution of comments and ratings
 
-### 🗂️ Data Model Summary
 
-- `users`: Authenticated accounts (Supabase-managed)
-- `startups`: Curated startup listings per user
-- `startup_ratings`: Structured multi-dimensional ratings per startup
-- `startup_engagements`: Interest signals, saves, and comments
-- `follows`: Social graph for personalized discovery
 
 ### 📚 Tech Stack
 
@@ -71,16 +65,9 @@ The application serves two core goals:
 
 ## 🧠 Evaluation Framework
 
-All startups are assessed using the Hally Six-Dimensional Framework:
+All startups are assessed using the Hally Six-Dimensional Framework across Market & Demand, Solution & Execution, Team & Founders, Business Model Viability, Validation & Traction, and Environment & Runway.
 
-| Dimension               | Focus                                                       |
-|-------------------------|-------------------------------------------------------------|
-| Market & Demand         | Pain-point validation, TAM/SAM/SOM, willingness-to-pay      |
-| Solution & Execution    | Technical feasibility, roadmap, partnerships                |
-| Team & Founders         | Grit, domain expertise, complementary skills, network       |
-| Business Model Viability| Unit economics, pricing strategy, GTM channel fit           |
-| Validation & Traction   | Revenue, pilots, usage, investor interest                   |
-| Environment & Runway    | Timing, legal/regulatory context, funding path              |
+> 📋 **Detailed framework documentation**: See `docs/SCHEMA.md` for complete rating system details.
 
 ---
 
@@ -103,12 +90,31 @@ git clone <private-repo-url>
 cd startin
 npm install
 npm run dev
+```
 
-Make sure your .env.local includes the correct Supabase credentials.
+Make sure your `.env.local` includes the correct Supabase credentials:
 
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+```
 
-🙌 Credits
+### 🔧 Logging Configuration
+
+The application uses a controlled logging system to reduce console noise. You can configure logging levels via environment variables:
+
+```bash
+# Set to 'true' to enable debug logging (defaults to true in development)
+NEXT_PUBLIC_DEBUG=false
+
+# Set to 'true' to enable verbose logging (includes info level logs)
+NEXT_PUBLIC_VERBOSE=false
+```
+
+**Note**: Error logs are always shown regardless of these settings.
+
+---
+
+🙌 **Credits**  
 Originally prototyped using bolt.new. MVP powered by Supabase & Vercel.
 

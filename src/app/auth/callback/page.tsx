@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { ensureUserProfile } from '@/lib/profile'
+import { logger } from '@/lib/logger'
 
 function AuthCallbackContent() {
   const router = useRouter()
@@ -23,7 +24,7 @@ function AuthCallbackContent() {
         const { data: { user } } = await supabase.auth.getUser()
         
         if (user) {
-          console.log('User already authenticated, redirecting to dashboard')
+          logger.debug('User already authenticated, redirecting to dashboard')
           // Clean up the URL by removing query string before redirect
           window.history.replaceState({}, '', '/dashboard')
           router.replace('/dashboard')
@@ -33,7 +34,7 @@ function AuthCallbackContent() {
         const code = searchParams.get('code')
         
         if (!code) {
-          console.log('No authentication code found, redirecting to home')
+          logger.debug('No authentication code found, redirecting to home')
           // Clean up the URL by removing query string before redirect
           window.history.replaceState({}, '', '/')
           router.replace('/')
@@ -44,26 +45,26 @@ function AuthCallbackContent() {
         const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
         if (error) {
-          console.error('Auth callback error:', error)
+          logger.error('Auth callback error', { error })
           setError(error.message)
           setIsLoading(false)
           return
         }
 
         if (data.session) {
-          console.log('Authentication successful')
+          logger.debug('Authentication successful')
           
           // Ensure user profile exists in public.users table
           if (data.session.user) {
             try {
               const profile = await ensureUserProfile(data.session.user)
               if (profile) {
-                console.log('User profile ensured:', profile)
+                logger.debug('User profile ensured', { userId: data.session.user.id })
               } else {
-                console.warn('Failed to create user profile, but continuing with auth')
+                logger.warn('Failed to create user profile, but continuing with auth')
               }
             } catch (profileError) {
-              console.error('Error ensuring user profile:', profileError)
+              logger.error('Error ensuring user profile', { error: profileError })
               // Don't fail the auth process if profile creation fails
               // The user can still use the app and create their profile later
             }
@@ -78,7 +79,7 @@ function AuthCallbackContent() {
           setIsLoading(false)
         }
       } catch (err) {
-        console.error('Unexpected error during auth callback:', err)
+        logger.error('Unexpected error during auth callback', { error: err })
         setError('An unexpected error occurred')
         setIsLoading(false)
       }

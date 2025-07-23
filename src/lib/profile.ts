@@ -1,5 +1,6 @@
 import { createBrowserClient } from '@supabase/ssr'
 import { User } from '@supabase/supabase-js'
+import { logger } from './logger'
 
 export interface UserProfile {
   id: string
@@ -9,8 +10,8 @@ export interface UserProfile {
 }
 
 /**
- * Creates a user profile in the public.users table if it doesn't exist
- * This should be called after successful authentication
+ * Ensures a user profile exists in the public.users table
+ * Creates a new profile if one doesn't exist
  */
 export async function ensureUserProfile(user: User): Promise<UserProfile | null> {
   try {
@@ -27,31 +28,25 @@ export async function ensureUserProfile(user: User): Promise<UserProfile | null>
       .single()
 
     if (fetchError && fetchError.code !== 'PGRST116') {
-      // PGRST116 is "not found" error, which is expected for new users
-      console.error('Error checking existing profile:', fetchError)
+      logger.error('Error checking existing user profile', { userId: user.id, error: fetchError })
       return null
     }
 
     if (existingProfile) {
-      console.log('User profile already exists:', existingProfile)
+      logger.debug('User profile already exists', { userId: user.id })
       return existingProfile
     }
 
-    // Generate fallback name from email or use default
+    // Generate a fallback name from email if no name is provided
     const generateFallbackName = (email: string | undefined): string => {
-      if (!email) return 'New User'
+      if (!email) return 'User'
       const emailPart = email.split('@')[0]
-      // Capitalize first letter and handle common email patterns
       return emailPart.charAt(0).toUpperCase() + emailPart.slice(1).toLowerCase()
     }
 
-    // Determine the name to use, with explicit fallback logic
     const userName = user.user_metadata?.full_name || 
                     user.user_metadata?.name || 
                     generateFallbackName(user.email)
-
-    console.log('Profile creation - User metadata:', user.user_metadata)
-    console.log('Profile creation - Determined name:', userName)
 
     // Create new profile
     const { data: newProfile, error: insertError } = await supabase
@@ -65,14 +60,14 @@ export async function ensureUserProfile(user: User): Promise<UserProfile | null>
       .single()
 
     if (insertError) {
-      console.error('Error creating user profile:', insertError)
+      logger.error('Error creating user profile', { userId: user.id, error: insertError })
       return null
     }
 
-    console.log('Created new user profile:', newProfile)
+    logger.debug('Created new user profile', { userId: user.id })
     return newProfile
   } catch (error) {
-    console.error('Unexpected error in ensureUserProfile:', error)
+    logger.error('Unexpected error in ensureUserProfile', { userId: user.id, error })
     return null
   }
 }
@@ -98,13 +93,13 @@ export async function updateUserProfile(
       .single()
 
     if (error) {
-      console.error('Error updating user profile:', error)
+      logger.error('Error updating user profile', { userId, error })
       return null
     }
 
     return updatedProfile
   } catch (error) {
-    console.error('Unexpected error in updateUserProfile:', error)
+    logger.error('Unexpected error in updateUserProfile', { userId, error })
     return null
   }
 }
@@ -128,7 +123,7 @@ export function getDisplayName(profile: UserProfile | null, userEmail?: string):
 }
 
 /**
- * Fetches a user's profile by ID
+ * Fetches a user's profile by ID (client-side)
  */
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   try {
@@ -144,13 +139,15 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
       .single()
 
     if (error) {
-      console.error('Error fetching user profile:', error)
+      logger.error('Error fetching user profile', { userId, error })
       return null
     }
 
     return profile
   } catch (error) {
-    console.error('Unexpected error in getUserProfile:', error)
+    logger.error('Unexpected error in getUserProfile', { userId, error })
     return null
   }
-} 
+}
+
+ 

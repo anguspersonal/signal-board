@@ -1,18 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { StartupBase } from '@/types/startup'
 
-interface StartupFormProps {
+interface StartupEditFormProps {
+  startup: StartupBase
   userId: string
 }
 
-export function StartupForm({ userId }: StartupFormProps) {
+export function StartupEditForm({ startup, userId }: StartupEditFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -26,6 +28,20 @@ export function StartupForm({ userId }: StartupFormProps) {
     status: '',
     asks_and_opportunities: ''
   })
+
+  // Initialize form data with startup data
+  useEffect(() => {
+    setFormData({
+      name: startup.name || '',
+      description: startup.description || '',
+      tags: startup.tags ? startup.tags.join(', ') : '',
+      logo_url: startup.logo_url || '',
+      website_url: startup.website_url || '',
+      visibility: startup.visibility || 'public',
+      status: startup.status || '',
+      asks_and_opportunities: startup.asks_and_opportunities || ''
+    })
+  }, [startup])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,10 +67,9 @@ export function StartupForm({ userId }: StartupFormProps) {
         .map(tag => tag.trim())
         .filter(tag => tag.length > 0)
 
-      const { data, error: insertError } = await supabase
+      const { error: updateError } = await supabase
         .from('startups')
-        .insert({
-          user_id: userId,
+        .update({
           name: formData.name.trim(),
           description: formData.description.trim() || null,
           tags: tags.length > 0 ? tags : null,
@@ -64,21 +79,17 @@ export function StartupForm({ userId }: StartupFormProps) {
           status: formData.status.trim() || null,
           asks_and_opportunities: formData.asks_and_opportunities.trim() || null
         })
-        .select()
-        .single()
+        .eq('id', startup.id)
+        .eq('user_id', userId)
 
-      if (insertError) {
-        console.error('Error inserting startup:', insertError)
-        setError(insertError.message || 'Failed to create startup')
+      if (updateError) {
+        console.error('Error updating startup:', updateError)
+        setError(updateError.message || 'Failed to update startup')
         return
       }
 
-      // Redirect to the new startup's page or dashboard
-      if (data?.id) {
-        router.push(`/startups/${data.id}`)
-      } else {
-        router.push('/dashboard')
-      }
+      // Redirect to the startup's page
+      router.push(`/startups/${startup.id}`)
 
     } catch (err) {
       console.error('Unexpected error:', err)
@@ -249,12 +260,12 @@ export function StartupForm({ userId }: StartupFormProps) {
           disabled={isLoading}
           className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
         >
-          {isLoading ? 'Creating...' : 'Create Startup'}
+          {isLoading ? 'Updating...' : 'Update Startup'}
         </Button>
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push('/dashboard')}
+          onClick={() => router.push(`/startups/${startup.id}`)}
           disabled={isLoading}
         >
           Cancel

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { createBrowserClient } from '@supabase/ssr'
 import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -24,23 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
-interface StartupWithRatings {
-  id: string
-  user_id: string
-  name?: string
-  description?: string
-  tags: string[]
-  logo_url: string
-  website_url: string
-  visibility: 'private' | 'invite-only' | 'public'
-  created_at: string
-  updated_at: string
-  avg_rating?: number
-  user_ratings?: Array<{ id: string; rating: number; comment?: string; user_id: string }>
-  saved?: boolean
-  users?: { name: string; email: string }
-}
+import { StartupWithRatings } from '@/types/startup'
 
 interface StartupCardProps {
   startup: StartupWithRatings
@@ -50,8 +35,25 @@ interface StartupCardProps {
 
 export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCardProps) {
   const router = useRouter()
-  const user = { id: '1' } // Mock user
+  const [user, setUser] = useState<{ id: string } | null>(null)
   const [loading, setLoading] = useState(false)
+
+  // Get the authenticated user
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        )
+        const { data: { user } } = await supabase.auth.getUser()
+        setUser(user)
+      } catch (error) {
+        console.error('Error getting user:', error)
+      }
+    }
+    getUser()
+  }, [])
 
   const isOwner = startup.user_id === user?.id
 
