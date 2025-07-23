@@ -7,7 +7,7 @@ import { logger } from './logger'
 async function fetchAverageScore(startupId: string): Promise<number> {
   const supabase = await createClient()
   
-  logger.debug('Fetching average rating for startup', { startupId })
+  // logger.debug('Fetching average rating for startup', { startupId })
   
   // First, get all scores for this startup
   const { data, error } = await supabase
@@ -21,7 +21,7 @@ async function fetchAverageScore(startupId: string): Promise<number> {
   }
 
   if (!data || data.length === 0) {
-    logger.debug('No ratings found for startup', { startupId })
+    // logger.debug('No ratings found for startup', { startupId })
     return 0
   }
 
@@ -29,7 +29,7 @@ async function fetchAverageScore(startupId: string): Promise<number> {
   const scores = data.map(rating => rating.score).filter(score => score !== null)
   const averageScore = scores.length > 0 ? scores.reduce((sum, score) => sum + score, 0) / scores.length : 0
   
-  logger.debug('Startup ratings calculated', { startupId, ratingsCount: scores.length, averageScore })
+  // logger.debug('Startup ratings calculated', { startupId, ratingsCount: scores.length, averageScore })
   
   // Return the average score (1-5 scale)
   return Math.round(averageScore * 10) / 10
@@ -72,7 +72,7 @@ export async function getUserStartups(userId: string): Promise<StartupWithCreato
 }
 
 export async function getUserStartupsWithRatings(userId: string): Promise<StartupWithRatings[]> {
-  logger.debug('Fetching user startups with ratings', { userId })
+  // logger.debug('Fetching user startups with ratings', { userId })
   const supabase = await createClient()
   
   const { data, error } = await supabase
@@ -102,7 +102,7 @@ export async function getUserStartupsWithRatings(userId: string): Promise<Startu
   logger.debug('Fetching ratings and user data for each startup', { userId, startupCount: data?.length || 0 })
   const startupsWithRatings = await Promise.all(
     (data as StartupBase[]).map(async (startup, index) => {
-      logger.debug('Fetching data for startup', { index: index + 1, startupName: startup.name })
+      // logger.debug('Fetching data for startup', { index: index + 1, startupName: startup.name })
       
       // Fetch average score
       const averageScore = await fetchAverageScore(startup.id)
@@ -145,18 +145,18 @@ export async function getUserStartupsWithRatings(userId: string): Promise<Startu
       
       const saved = !!savedData
 
-      logger.debug('Startup data processed', { 
-        startupName: startup.name, 
-        averageScore, 
-        ratingsCount: userRatings.length, 
-        saved 
-      })
+      // logger.debug('Startup data processed', { 
+      //   startupName: startup.name, 
+      //   averageScore, 
+      //   ratingsCount: userRatings.length, 
+      //   saved 
+      // })
 
       return toRatedStartup(startup, averageScore, 'You', userRatings, saved, users)
     })
   )
 
-  logger.debug('Processed user startups with ratings', { userId, count: startupsWithRatings.length })
+  // logger.debug('Processed user startups with ratings', { userId, count: startupsWithRatings.length })
   return startupsWithRatings
 }
 

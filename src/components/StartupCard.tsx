@@ -49,7 +49,7 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
         const { data: { user } } = await supabase.auth.getUser()
         setUser(user)
       } catch (error) {
-        console.error('Error getting user:', error)
+        // console.error('Error getting user:', error)
       }
     }
     getUser()
@@ -67,7 +67,7 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
       
       onUpdate?.()
     } catch (error) {
-      console.error('Error toggling save:', error)
+      // console.error('Error toggling save:', error)
     } finally {
       setLoading(false)
     }
@@ -84,7 +84,7 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
         
         onUpdate?.()
       } catch (error) {
-        console.error('Error deleting startup:', error)
+        // console.error('Error deleting startup:', error)
       } finally {
         setLoading(false)
       }

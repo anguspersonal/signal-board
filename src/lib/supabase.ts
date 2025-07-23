@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { logger } from './logger'
 
 export async function createClient() {
-  logger.debug('Creating Supabase server client...')
+  // logger.debug('Creating Supabase server client...')
   
   const cookieStore = await cookies()
 
@@ -15,10 +15,10 @@ export async function createClient() {
     throw new Error('Missing Supabase environment variables')
   }
 
-  logger.debug('Supabase environment variables found', {
-    url: supabaseUrl,
-    keyLength: supabaseKey.length
-  })
+  // logger.debug('Supabase environment variables found', {
+  //   url: supabaseUrl,
+  //   keyLength: supabaseKey.length
+  // })
 
   const client = createServerClient(
     supabaseUrl,
@@ -27,7 +27,7 @@ export async function createClient() {
       cookies: {
         getAll() {
           const allCookies = cookieStore.getAll()
-          logger.debug('Getting cookies', { count: allCookies.length })
+          // logger.debug('Getting cookies', { count: allCookies.length })
           return allCookies
         },
         setAll(cookiesToSet) {
@@ -47,6 +47,6 @@ export async function createClient() {
     }
   )
 
-  logger.debug('Supabase server client created successfully')
+  // logger.debug('Supabase server client created successfully')
   return client
 } 
