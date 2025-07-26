@@ -126,6 +126,7 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
                 width={48}
                 height={48}
                 className="rounded-lg object-cover w-10 h-10 sm:w-12 sm:h-12"
+                unoptimized
               />
             ) : (
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
