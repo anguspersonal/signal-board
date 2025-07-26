@@ -16,6 +16,7 @@ const nextConfig = {
     ignoreBuildErrors: true, // ⛔ disables typechecking in `next build`
   },
   images: {
+    domains: ['lypsundaqtyyzgicraxm.supabase.co'],
     remotePatterns: [
       {
         protocol: 'https',
