@@ -8,6 +8,6 @@ export default async function SettingsPage() {
   return getPageLayout(
     user,
     userProfile,
-    <SettingsClient user={user} userProfile={userProfile} />
+    <SettingsClient />
   )
 } 

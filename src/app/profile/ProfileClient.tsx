@@ -24,12 +24,13 @@ import {
   AlertCircle
 } from 'lucide-react'
 
-interface ProfileClientProps {
+export function ProfileClient({ 
+  user, 
+  userProfile 
+}: {
   user: { id: string; email?: string }
   userProfile: UserProfile | null
-}
-
-export function ProfileClient({ user, userProfile }: ProfileClientProps) {
+}) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isEditing, setIsEditing] = useState(false)

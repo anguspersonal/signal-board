@@ -1,21 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import UploadLogo from '@/components/ui/UploadLogo'
 
-interface StartupFormProps {
-  userId: string
-}
-
-export function StartupForm({ userId }: StartupFormProps) {
+export function StartupForm({ userId }: { userId: string }) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [logoPath, setLogoPath] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -26,6 +25,49 @@ export function StartupForm({ userId }: StartupFormProps) {
     status: '',
     asks_and_opportunities: ''
   })
+
+  // Cleanup function to delete uploaded files if form is abandoned
+  const cleanupUploadedFiles = useCallback(async () => {
+    if (logoPath) {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+
+      try {
+        await supabase.storage
+          .from('startup-logos')
+          .remove([logoPath])
+      } catch (err) {
+        console.error('Error cleaning up uploaded files:', err)
+      }
+    }
+  }, [logoPath])
+
+  // Cleanup on component unmount or when user navigates away
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      cleanupUploadedFiles()
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      cleanupUploadedFiles()
+    }
+  }, [cleanupUploadedFiles])
+
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      cleanupUploadedFiles()
+    }
+  }, [cleanupUploadedFiles])
+
+  const handleCancel = async () => {
+    await cleanupUploadedFiles()
+    router.push('/dashboard')
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,7 +100,7 @@ export function StartupForm({ userId }: StartupFormProps) {
           name: formData.name.trim(),
           description: formData.description.trim() || null,
           tags: tags.length > 0 ? tags : null,
-          logo_url: formData.logo_url.trim() || null,
+          logo_url: logoUrl || null, // Temporary for now
           website_url: formData.website_url.trim() || null,
           visibility: formData.visibility,
           status: formData.status.trim() || null,
@@ -71,6 +113,33 @@ export function StartupForm({ userId }: StartupFormProps) {
         console.error('Error inserting startup:', insertError)
         setError(insertError.message || 'Failed to create startup')
         return
+      }
+
+      // If logoPath exists, move file to final location
+      if (logoPath && data?.id) {
+        const fileName = logoPath.split('/').pop()
+        const finalPath = `${data.id}/${fileName}`
+
+        const { error: moveError } = await supabase.storage
+          .from('startup-logos')
+          .move(logoPath, finalPath)
+
+        if (moveError) {
+          console.error('Error moving logo file:', moveError)
+        } else {
+          // Get new public URL
+          const { data: publicData } = supabase.storage
+            .from('startup-logos')
+            .getPublicUrl(finalPath)
+
+          if (publicData?.publicUrl) {
+            // Update the startup with the new logo URL
+            await supabase
+              .from('startups')
+              .update({ logo_url: publicData.publicUrl })
+              .eq('id', data.id)
+          }
+        }
       }
 
       // Redirect to the new startup's page or dashboard
@@ -205,18 +274,17 @@ export function StartupForm({ userId }: StartupFormProps) {
         </p>
       </div>
 
-      {/* Logo URL Field */}
+      {/* Logo Upload Field */}
       <div>
-        <label htmlFor="logo_url" className="block text-sm font-medium text-gray-700 mb-2">
-          Logo URL
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Startup Logo
         </label>
-        <Input
-          id="logo_url"
-          type="url"
-          value={formData.logo_url}
-          onChange={(e) => handleInputChange('logo_url', e.target.value)}
-          placeholder="https://example.com/logo.png"
-          className="w-full"
+        <UploadLogo 
+          startupId={`new_${userId}_${Date.now()}`} 
+          onUpload={(url, path) => {
+            setLogoUrl(url)
+            setLogoPath(path || null)
+          }}
         />
       </div>
 
@@ -249,12 +317,19 @@ export function StartupForm({ userId }: StartupFormProps) {
           disabled={isLoading}
           className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
         >
-          {isLoading ? 'Creating...' : 'Create Startup'}
+          {isLoading ? (
+            <span className="hidden sm:inline">Creating...</span>
+          ) : (
+            <>
+              <span className="sm:hidden">Create</span>
+              <span className="hidden sm:inline">Create Startup</span>
+            </>
+          )}
         </Button>
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push('/dashboard')}
+          onClick={handleCancel}
           disabled={isLoading}
         >
           Cancel

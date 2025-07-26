@@ -1,5 +1,5 @@
 import { getPageLayout, getAuthenticatedUser } from '@/lib/page-layout'
-import { getUserStartupsWithRatings } from '@/lib/startups'
+import { getUserStartupsWithRatings, getUserSavedStartupsWithRatings } from '@/lib/startups'
 import { DashboardClient } from './DashboardClient'
 
 export default async function DashboardPage() {
@@ -7,10 +7,14 @@ export default async function DashboardPage() {
   const { user, userProfile } = await getAuthenticatedUser()
 
   // Fetch additional data server-side
-  const startups = await getUserStartupsWithRatings(user.id)
+  const [startups, savedStartups] = await Promise.all([
+    getUserStartupsWithRatings(user.id),
+    getUserSavedStartupsWithRatings(user.id)
+  ])
 
-  // Extract unique tags from startups
-  const allTags = Array.from(new Set(startups.flatMap(s => s.tags ?? [])))
+  // Extract unique tags from all startups (both owned and saved)
+  const allStartups = [...startups, ...savedStartups]
+  const allTags = Array.from(new Set(allStartups.flatMap(s => s.tags ?? [])))
 
   return getPageLayout(
     user, 
@@ -18,6 +22,7 @@ export default async function DashboardPage() {
     <DashboardClient 
       userProfile={userProfile}
       startups={startups}
+      savedStartups={savedStartups}
       allTags={Array.from(allTags)}
     />
   )

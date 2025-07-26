@@ -23,12 +23,13 @@ import { ThemeToggle } from './theme-toggle'
 import { UserProfile } from '@/lib/profile'
 import { logger } from '@/lib/logger'
 
-interface NavigationProps {
+export function Navigation({ 
+  user, 
+  userProfile 
+}: {
   user: { id: string; email?: string } | null
   userProfile: UserProfile | null
-}
-
-export function Navigation({ user, userProfile }: NavigationProps) {
+}) {
   const router = useRouter()
   const [notifications, setNotifications] = useState(3) // Mock notification count
   const [isLoggingOut, setIsLoggingOut] = useState(false)

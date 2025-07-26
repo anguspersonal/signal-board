@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { StartupWithRatings } from '@/types/startup'
+import { toggleStartupEngagementClient } from '@/lib/startups-client'
 
 interface StartupCardProps {
   startup: StartupWithRatings
@@ -37,6 +38,7 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
   const router = useRouter()
   const [user, setUser] = useState<{ id: string } | null>(null)
   const [loading, setLoading] = useState(false)
+  const [localStartup, setLocalStartup] = useState(startup)
 
   // Get the authenticated user
   useEffect(() => {
@@ -48,26 +50,35 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
         )
         const { data: { user } } = await supabase.auth.getUser()
         setUser(user)
-      } catch (error) {
+      } catch {
         // console.error('Error getting user:', error)
       }
     }
     getUser()
   }, [])
 
-  const isOwner = startup.user_id === user?.id
+  // Update local startup when prop changes
+  useEffect(() => {
+    setLocalStartup(startup)
+  }, [startup])
+
+  const isOwner = localStartup.user_id === user?.id
 
   const handleSaveToggle = async () => {
     if (!user) return
     
     setLoading(true)
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      onUpdate?.()
+      const success = await toggleStartupEngagementClient(localStartup.id, 'saved')
+      if (success) {
+        setLocalStartup(prev => ({
+          ...prev,
+          saved: !prev.saved
+        }))
+        onUpdate?.()
+      }
     } catch (error) {
-      // console.error('Error toggling save:', error)
+      console.error('Error toggling save:', error)
     } finally {
       setLoading(false)
     }
@@ -83,7 +94,7 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
         await new Promise(resolve => setTimeout(resolve, 500))
         
         onUpdate?.()
-      } catch (error) {
+      } catch {
         // console.error('Error deleting startup:', error)
       } finally {
         setLoading(false)
@@ -103,74 +114,85 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
   }
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200">
+    <Card className="hover:shadow-lg transition-shadow duration-200 w-full">
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-3">
+        <div className="flex items-start gap-3">
+          {/* Logo/Icon - Fixed width but responsive */}
+          <div className="flex-shrink-0">
             {startup.logo_url ? (
               <Image 
                 src={startup.logo_url} 
                 alt={startup.name || 'Startup'}
                 width={48}
                 height={48}
-                className="rounded-lg object-cover"
+                className="rounded-lg object-cover w-10 h-10 sm:w-12 sm:h-12"
               />
             ) : (
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm sm:text-lg">
                   {(startup.name || 'S').charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
-            <div className="flex-1 min-w-0">
-              <CardTitle className="text-lg truncate">{startup.name || 'Unnamed Startup'}</CardTitle>
-              {showOwner && startup.users && (
-                <div className="flex items-center space-x-2 mt-1">
-                  <Avatar className="h-4 w-4">
-                    <AvatarFallback className="text-xs">
-                      {startup.users.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-xs text-slate-500">{startup.users.name}</span>
-                </div>
-              )}
-            </div>
           </div>
           
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => router.push(`/startups/${startup.id}`)}>
-                <ExternalLink className="mr-2 h-4 w-4" />
-                View Details
-              </DropdownMenuItem>
-              {isOwner ? (
-                <>
-                  <DropdownMenuItem onClick={() => router.push(`/startups/${startup.id}/edit`)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleDelete} className="text-red-600">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
-                </>
-              ) : (
-                <DropdownMenuItem onClick={handleSaveToggle} disabled={loading}>
-                  <Bookmark className={`mr-2 h-4 w-4 ${startup.saved ? 'fill-current' : ''}`} />
-                  {startup.saved ? 'Unsave' : 'Save'}
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem>
-                <Share2 className="mr-2 h-4 w-4" />
-                Share
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Title and Owner Info - Flexible width with proper truncation */}
+          <div className="flex-1 min-w-0 flex flex-col">
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle className="text-base sm:text-lg truncate leading-tight">
+                {startup.name || 'Unnamed Startup'}
+              </CardTitle>
+              
+              {/* Dropdown Menu - Fixed position, won't overflow */}
+              <div className="flex-shrink-0">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => router.push(`/startups/${startup.id}`)}>
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      View Details
+                    </DropdownMenuItem>
+                    {isOwner ? (
+                      <>
+                        <DropdownMenuItem onClick={() => router.push(`/startups/${startup.id}/edit`)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleDelete} className="text-red-600">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </>
+                    ) : (
+                      <DropdownMenuItem onClick={handleSaveToggle} disabled={loading}>
+                        <Bookmark className={`mr-2 h-4 w-4 ${localStartup.saved ? 'fill-current' : ''}`} />
+                        {localStartup.saved ? 'Unsave' : 'Save'}
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem>
+                      <Share2 className="mr-2 h-4 w-4" />
+                      Share
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+            
+            {showOwner && startup.users && (
+              <div className="flex items-center gap-2 mt-1">
+                <Avatar className="h-4 w-4 flex-shrink-0">
+                  <AvatarFallback className="text-xs">
+                    {startup.users.name.split(' ').map(n => n[0]).join('')}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-xs text-slate-500 truncate">{startup.users.name}</span>
+              </div>
+            )}
+          </div>
         </div>
       </CardHeader>
 
@@ -179,6 +201,15 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
           {startup.description || 'No description provided'}
         </p>
 
+        {/* Status */}
+        {startup.status && (
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs">
+              {startup.status}
+            </Badge>
+          </div>
+        )}
+
         {startup.website_url && (
           <a
             href={startup.website_url}
@@ -186,8 +217,8 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
             rel="noopener noreferrer"
             className="text-xs text-blue-600 hover:text-blue-700 flex items-center"
           >
-            <ExternalLink className="h-3 w-3 mr-1" />
-            Visit Website
+            <ExternalLink className="h-3 w-3 mr-1 flex-shrink-0" />
+            <span className="truncate">Visit Website</span>
           </a>
         )}
 
@@ -207,19 +238,21 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
           </div>
         )}
 
-        {/* Rating */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Star className={`h-4 w-4 ${startup.avg_rating ? getRatingColor(startup.avg_rating) : 'text-slate-400'}`} />
-            <span className={`text-sm font-medium ${startup.avg_rating ? getRatingColor(startup.avg_rating) : 'text-slate-400'}`}>
+        {/* Rating and Action Buttons */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <Star className={`h-4 w-4 flex-shrink-0 ${startup.avg_rating ? getRatingColor(startup.avg_rating) : 'text-slate-400'}`} />
+            <span className={`text-sm font-medium truncate ${startup.avg_rating ? getRatingColor(startup.avg_rating) : 'text-slate-400'}`}>
               {formatRating(startup.avg_rating)}
             </span>
-            <span className="text-xs text-slate-500">
-              ({startup.user_ratings?.length || 0} {startup.user_ratings?.length === 1 ? 'rating' : 'ratings'})
-            </span>
+            {startup.visibility === 'public' && (
+              <span className="text-xs text-slate-500 flex-shrink-0">
+                ({startup.user_ratings?.length || 0} {startup.user_ratings?.length === 1 ? 'rating' : 'ratings'})
+              </span>
+            )}
           </div>
 
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center gap-1 flex-shrink-0">
             {!isOwner && (
               <Button
                 variant="ghost"
@@ -228,7 +261,7 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
                 disabled={loading}
                 className="h-8 w-8 p-0"
               >
-                <Bookmark className={`h-4 w-4 ${startup.saved ? 'fill-current text-blue-600' : 'text-slate-400'}`} />
+                <Bookmark className={`h-4 w-4 ${localStartup.saved ? 'fill-current text-blue-600' : 'text-slate-400'}`} />
               </Button>
             )}
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">

@@ -11,12 +11,13 @@ import { Search, Filter, TrendingUp, Users, Heart, MessageCircle, Bookmark } fro
 import { StartupWithRatings } from '@/types/startup'
 import { ActivityItem } from '@/types/activity'
 
-interface FeedClientProps {
+export function FeedClient({ 
+  activities: serverActivities, 
+  trendingStartups: serverTrendingStartups 
+}: {
   activities: ActivityItem[]
   trendingStartups: StartupWithRatings[]
-}
-
-export function FeedClient({ activities: serverActivities, trendingStartups: serverTrendingStartups }: FeedClientProps) {
+}) {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('all')
 
@@ -252,7 +253,7 @@ export function FeedClient({ activities: serverActivities, trendingStartups: ser
         </TabsContent>
 
         <TabsContent value="trending">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
             {trendingStartups.map(startup => (
               <StartupCard 
                 key={startup.id} 

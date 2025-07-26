@@ -1,42 +1,26 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
-import { getUserProfileServer } from '@/lib/profile-server'
-import { AppLayout } from '@/components/AppLayout'
-import { Navigation } from '@/components/Navigation'
-import { SideNavigation } from '@/components/SideNavigation'
+import { getPageLayout, getAuthenticatedUser } from '@/lib/page-layout'
 import { StartupForm } from './StartupForm'
 
 export default async function NewStartupPage() {
-  // Check authentication
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) {
-    redirect('/')
-  }
+  // Get authenticated user and profile
+  const { user, userProfile } = await getAuthenticatedUser()
 
-  // Fetch user profile server-side
-  const userProfile = await getUserProfileServer(user.id)
-
-  return (
-    <AppLayout 
-      navigation={<Navigation user={user} userProfile={userProfile} />}
-      sideNavigation={<SideNavigation />}
-    >
-      <div className="space-y-8">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Add New Startup</h1>
-          <p className="text-slate-600 mt-1">
-            Share your startup with the community for evaluation and feedback
-          </p>
-        </div>
-
-        {/* Form */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <StartupForm userId={user.id} />
-        </div>
+  return getPageLayout(
+    user,
+    userProfile,
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-slate-900">Add New Startup</h1>
+        <p className="text-slate-600 mt-1">
+          Share your startup with the community for evaluation and feedback
+        </p>
       </div>
-    </AppLayout>
+
+      {/* Form */}
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <StartupForm userId={user.id} />
+      </div>
+    </div>
   )
 } 

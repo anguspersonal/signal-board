@@ -15,6 +15,15 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true, // ⛔ disables typechecking in `next build`
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lypsundaqtyyzgicraxm.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
+  },
 }
 
 export default nextConfig

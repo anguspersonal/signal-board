@@ -23,9 +23,9 @@ interface NavItem {
 
 const navigationItems: NavItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
+  { name: 'Startups', href: '/startups', icon: Building2 },
   { name: 'Activity Feed', href: '/feed', icon: Activity },
   { name: 'Network', href: '/network', icon: Users },
-  { name: 'My Startups', href: '/startups', icon: Building2 },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
@@ -44,7 +44,7 @@ export function SideNavigation() {
       isCollapsed ? "w-16" : "w-64"
     )}>
       {/* Toggle Button */}
-      <div className="flex justify-end p-4 border-b border-gray-200">
+      <div className="flex justify-end p-4">
         <Button
           variant="ghost"
           size="sm"
@@ -77,14 +77,14 @@ export function SideNavigation() {
               onClick={() => handleNavigation(item.href)}
             >
               <Icon className={cn(
-                "h-4 w-4",
+                "h-4 w-4 flex-shrink-0",
                 isCollapsed ? "mr-0" : "mr-3"
               )} />
               {!isCollapsed && (
-                <span className="flex-1 text-left">{item.name}</span>
+                <span className="flex-1 text-left truncate whitespace-nowrap">{item.name}</span>
               )}
               {item.badge && !isCollapsed && (
-                <span className="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                <span className="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex-shrink-0">
                   {item.badge}
                 </span>
               )}

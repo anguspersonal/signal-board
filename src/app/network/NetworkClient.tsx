@@ -20,12 +20,13 @@ import {
 } from 'lucide-react'
 import { NetworkConnection, SuggestedConnection } from '@/types/network'
 
-interface NetworkClientProps {
+export function NetworkClient({ 
+  networkConnections: serverConnections, 
+  suggestedConnections: serverSuggestions 
+}: {
   networkConnections: NetworkConnection[]
   suggestedConnections: SuggestedConnection[]
-}
-
-export function NetworkClient({ networkConnections: serverConnections, suggestedConnections: serverSuggestions }: NetworkClientProps) {
+}) {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('all')

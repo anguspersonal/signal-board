@@ -6,62 +6,28 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Search, Filter, Plus, ExternalLink } from 'lucide-react'
+import { Search, Filter, Plus } from 'lucide-react'
 import { getDisplayName } from '@/lib/profile'
 import { StartupWithRatings } from '@/types/startup'
 import { UserProfile } from '@/lib/profile'
+import { StartupCard } from '@/components/StartupCard'
 
-interface DashboardClientProps {
+
+
+export function DashboardClient({ 
+  userProfile, 
+  startups, 
+  savedStartups,
+  allTags 
+}: {
   userProfile: UserProfile | null
   startups: StartupWithRatings[]
+  savedStartups: StartupWithRatings[]
   allTags: string[]
-}
-
-const StartupCard = ({ startup, showOwner = false, onUpdate }: { 
-  startup: StartupWithRatings, 
-  showOwner?: boolean, 
-  onUpdate: () => void 
-}) => (
-  <div className="bg-white rounded-lg border p-6 hover:shadow-md transition-shadow">
-    <div className="flex justify-between items-start mb-4">
-      <div className="flex items-center space-x-2">
-        <h3 className="text-lg font-semibold text-gray-900">{startup.name || 'Unnamed Startup'}</h3>
-        <ExternalLink className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
-      </div>
-      <div className="flex items-center space-x-1 bg-blue-50 px-2 py-1 rounded-full">
-        <span className="text-sm font-medium text-blue-700">
-          {startup.avg_rating ? `${startup.avg_rating}/5` : 'Not rated'}
-        </span>
-      </div>
-    </div>
-    <p className="text-gray-600 text-sm mb-4">{startup.description || 'No description available'}</p>
-    {startup.tags && startup.tags.length > 0 && (
-      <div className="flex flex-wrap gap-1 mb-4">
-        {startup.tags.map(tag => (
-          <Badge key={tag} variant="outline" className="text-xs">
-            {tag}
-          </Badge>
-        ))}
-      </div>
-    )}
-    <div className="flex justify-between items-center">
-      {showOwner && startup.users && (
-        <div className="text-sm text-gray-500">
-          by <span className="font-medium text-gray-700">{startup.users.name}</span>
-        </div>
-      )}
-      <Button size="sm" onClick={onUpdate}>View Details</Button>
-    </div>
-  </div>
-)
-
-
-
-export function DashboardClient({ userProfile, startups, allTags }: DashboardClientProps) {
+}) {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [savedStartups] = useState<StartupWithRatings[]>([])
 
   const filteredStartups = startups.filter(startup => {
     const matchesSearch = (startup.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
@@ -74,7 +40,9 @@ export function DashboardClient({ userProfile, startups, allTags }: DashboardCli
   const filteredSavedStartups = savedStartups.filter(startup => {
     const matchesSearch = (startup.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
                          (startup.description?.toLowerCase() || '').includes(searchTerm.toLowerCase())
-    return matchesSearch
+    const matchesTags = selectedTags.length === 0 || 
+                       selectedTags.some(tag => startup.tags?.includes(tag))
+    return matchesSearch && matchesTags
   })
 
   const handleViewStartup = (startupId: string) => {
@@ -93,10 +61,10 @@ export function DashboardClient({ userProfile, startups, allTags }: DashboardCli
         </div>
         <Button 
           onClick={() => router.push('/startups/new')}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2 whitespace-nowrap"
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Startup
+          <Plus className="h-4 w-4 flex-shrink-0" />
+          <span className="truncate hidden sm:inline">Add Startup</span>
         </Button>
       </div>
 
@@ -148,6 +116,13 @@ export function DashboardClient({ userProfile, startups, allTags }: DashboardCli
             <div className="text-center py-12">
               <div className="text-muted-foreground text-lg">No startups found</div>
               <p className="text-muted-foreground mt-2">Add your first startup to get started</p>
+              <Button 
+                onClick={() => router.push('/startups/new')}
+                className="mt-4 bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Startup
+              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -168,6 +143,13 @@ export function DashboardClient({ userProfile, startups, allTags }: DashboardCli
             <div className="text-center py-12">
               <div className="text-muted-foreground text-lg">No saved startups</div>
               <p className="text-muted-foreground mt-2">Startups you save will appear here</p>
+              <Button 
+                onClick={() => router.push('/startups')}
+                variant="outline"
+                className="mt-4"
+              >
+                Explore Startups
+              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -179,6 +161,26 @@ export function DashboardClient({ userProfile, startups, allTags }: DashboardCli
                   onUpdate={() => handleViewStartup(startup.id)}
                 />
               ))}
+              
+              {/* CTA Card when less than 3 saved startups */}
+              {filteredSavedStartups.length < 3 && (
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center min-h-[200px] bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <div className="text-gray-400 mb-3">
+                    <Search className="w-12 h-12" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-700 mb-2">Discover More Startups</h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Explore the startup ecosystem and save interesting companies
+                  </p>
+                  <Button 
+                    onClick={() => router.push('/startups')}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Browse Startups
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </TabsContent>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { Button } from '@/components/ui/button'
@@ -8,16 +8,20 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { StartupBase } from '@/types/startup'
+import UploadLogo from '@/components/ui/UploadLogo'
 
-interface StartupEditFormProps {
+export function StartupEditForm({ 
+  startup, 
+  userId 
+}: {
   startup: StartupBase
   userId: string
-}
-
-export function StartupEditForm({ startup, userId }: StartupEditFormProps) {
+}) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [logoUrl, setLogoUrl] = useState<string | null>(startup.logo_url || null)
+  const [logoPath, setLogoPath] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -28,6 +32,49 @@ export function StartupEditForm({ startup, userId }: StartupEditFormProps) {
     status: '',
     asks_and_opportunities: ''
   })
+
+  // Cleanup function to delete uploaded files if form is abandoned
+  const cleanupUploadedFiles = useCallback(async () => {
+    if (logoPath) {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+
+      try {
+        await supabase.storage
+          .from('startup-logos')
+          .remove([logoPath])
+      } catch (err) {
+        console.error('Error cleaning up uploaded files:', err)
+      }
+    }
+  }, [logoPath])
+
+  // Cleanup on component unmount or when user navigates away
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      cleanupUploadedFiles()
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      cleanupUploadedFiles()
+    }
+  }, [cleanupUploadedFiles])
+
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      cleanupUploadedFiles()
+    }
+  }, [cleanupUploadedFiles])
+
+  const handleCancel = async () => {
+    await cleanupUploadedFiles()
+    router.push(`/startups/${startup.id}`)
+  }
 
   // Initialize form data with startup data
   useEffect(() => {
@@ -73,7 +120,7 @@ export function StartupEditForm({ startup, userId }: StartupEditFormProps) {
           name: formData.name.trim(),
           description: formData.description.trim() || null,
           tags: tags.length > 0 ? tags : null,
-          logo_url: formData.logo_url.trim() || null,
+          logo_url: logoUrl || formData.logo_url.trim() || null,
           website_url: formData.website_url.trim() || null,
           visibility: formData.visibility,
           status: formData.status.trim() || null,
@@ -216,18 +263,18 @@ export function StartupEditForm({ startup, userId }: StartupEditFormProps) {
         </p>
       </div>
 
-      {/* Logo URL Field */}
+      {/* Logo Upload Field */}
       <div>
-        <label htmlFor="logo_url" className="block text-sm font-medium text-gray-700 mb-2">
-          Logo URL
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Startup Logo
         </label>
-        <Input
-          id="logo_url"
-          type="url"
-          value={formData.logo_url}
-          onChange={(e) => handleInputChange('logo_url', e.target.value)}
-          placeholder="https://example.com/logo.png"
-          className="w-full"
+        <UploadLogo 
+          startupId={startup.id} 
+          onUpload={(url: string, path?: string) => {
+            setLogoUrl(url)
+            setLogoPath(path || null)
+          }}
+          currentLogoUrl={startup.logo_url}
         />
       </div>
 
@@ -265,7 +312,7 @@ export function StartupEditForm({ startup, userId }: StartupEditFormProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push(`/startups/${startup.id}`)}
+          onClick={handleCancel}
           disabled={isLoading}
         >
           Cancel

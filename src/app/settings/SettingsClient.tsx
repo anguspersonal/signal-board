@@ -21,14 +21,9 @@ import {
   Save,
   AlertTriangle
 } from 'lucide-react'
-import { UserProfile } from '@/lib/profile'
 
-interface SettingsClientProps {
-  user: { id: string; email?: string } | null
-  userProfile: UserProfile | null
-}
 
-export function SettingsClient({}: SettingsClientProps) {
+export function SettingsClient() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
