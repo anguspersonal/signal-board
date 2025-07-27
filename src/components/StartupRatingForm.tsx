@@ -155,30 +155,33 @@ export function StartupRatingForm({ startupId, userId, onRatingSubmitted }: Star
               onValueChange={val => setVisibility(val as 'public' | 'private' | 'inner-circle')}
               className="flex flex-col gap-2 mt-2"
             >
-              <RadioGroupItem value="public" id="public">
-                <Label htmlFor="public" className="ml-2 cursor-pointer">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="public" id="public" />
+                <Label htmlFor="public" className="cursor-pointer">
                   Public
                   <span className="ml-1 text-xs text-slate-500" title="Visible to everyone.">
                     (Visible to everyone)
                   </span>
                 </Label>
-              </RadioGroupItem>
-              <RadioGroupItem value="private" id="private">
-                <Label htmlFor="private" className="ml-2 cursor-pointer">
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="private" id="private" />
+                <Label htmlFor="private" className="cursor-pointer">
                   Private
                   <span className="ml-1 text-xs text-slate-500" title="Only you can see this rating.">
                     (Only you can see this rating)
                   </span>
                 </Label>
-              </RadioGroupItem>
-              <RadioGroupItem value="inner-circle" id="inner-circle">
-                <Label htmlFor="inner-circle" className="ml-2 cursor-pointer">
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="inner-circle" id="inner-circle" />
+                <Label htmlFor="inner-circle" className="cursor-pointer">
                   Inner Circle
                   <span className="ml-1 text-xs text-slate-500" title="Visible to users with special access to this startup.">
                     (Visible to users with special access)
                   </span>
                 </Label>
-              </RadioGroupItem>
+              </div>
             </RadioGroup>
           </div>
           {/* End Visibility Selector */}
