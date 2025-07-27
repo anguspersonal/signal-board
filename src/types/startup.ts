@@ -16,6 +16,7 @@ export interface StartupBase {
   user_id: string
   name: string
   description: string
+  summary?: string
   tags?: string[]
   logo_url?: string
   visibility: 'public' | 'invite-only' | 'private'

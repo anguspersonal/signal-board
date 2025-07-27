@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { StartupWithRatings } from '@/types/startup'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -9,6 +9,7 @@ import { Star, MessageCircle, Heart, Share2, ExternalLink, Edit } from 'lucide-r
 import Image from 'next/image'
 import { toggleStartupEngagementClient } from '@/lib/startups-client'
 import { StartupRatingForm } from '@/components/StartupRatingForm'
+import ReactMarkdown from 'react-markdown'
 
 interface StartupDetailViewProps {
   startup: StartupWithRatings
@@ -204,6 +205,18 @@ export function StartupDetailView({ startup, canViewSensitiveData }: StartupDeta
         </div>
       )}
 
+      {/* Summary */}
+      {startup.summary && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-slate-700">{startup.summary}</p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Description */}
       {startup.description && (
         <Card>
@@ -211,7 +224,11 @@ export function StartupDetailView({ startup, canViewSensitiveData }: StartupDeta
             <CardTitle>About</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-slate-700 whitespace-pre-wrap">{startup.description}</p>
+            <div className="prose max-w-none prose-slate">
+              <ReactMarkdown>
+                {startup.description}
+              </ReactMarkdown>
+            </div>
           </CardContent>
         </Card>
       )}
