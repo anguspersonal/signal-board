@@ -7,10 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { StartupBase } from '@/types/startups'
+import { StartupBase } from '@/types/startup'
 import UploadLogo from '@/components/ui/UploadLogo'
-import { StatusSelect } from '@/components/ui/StatusSelect'
-import ReactMarkdown from 'react-markdown'
 
 export function StartupEditForm({ 
   startup, 
@@ -24,10 +22,8 @@ export function StartupEditForm({
   const [error, setError] = useState('')
   const [logoUrl, setLogoUrl] = useState<string | null>(startup.logo_url || null)
   const [logoPath, setLogoPath] = useState<string | null>(null)
-  const [showPreview, setShowPreview] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
-    summary: '',
     description: '',
     tags: '',
     logo_url: '',
@@ -84,7 +80,6 @@ export function StartupEditForm({
   useEffect(() => {
     setFormData({
       name: startup.name || '',
-      summary: startup.summary || '',
       description: startup.description || '',
       tags: startup.tags ? startup.tags.join(', ') : '',
       logo_url: startup.logo_url || '',
@@ -123,7 +118,6 @@ export function StartupEditForm({
         .from('startups')
         .update({
           name: formData.name.trim(),
-          summary: formData.summary.trim() || null,
           description: formData.description.trim() || null,
           tags: tags.length > 0 ? tags : null,
           logo_url: logoUrl || formData.logo_url.trim() || null,
@@ -177,69 +171,19 @@ export function StartupEditForm({
         />
       </div>
 
-      {/* Summary Field */}
-      <div>
-        <label htmlFor="summary" className="block text-sm font-medium text-gray-700 mb-2">
-          Summary
-        </label>
-        <Textarea
-          id="summary"
-          value={formData.summary}
-          onChange={(e) => handleInputChange('summary', e.target.value)}
-          placeholder="Brief summary of your startup (for cards and previews)..."
-          rows={2}
-          className="w-full"
-        />
-        <p className="text-sm text-gray-500 mt-1">
-          A short blurb that will appear on startup cards and previews
-        </p>
-      </div>
-
       {/* Description Field */}
       <div>
         <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-          Description (Markdown Supported)
+          Description
         </label>
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant={!showPreview ? "default" : "outline"}
-              size="sm"
-              onClick={() => setShowPreview(false)}
-            >
-              Edit
-            </Button>
-            <Button
-              type="button"
-              variant={showPreview ? "default" : "outline"}
-              size="sm"
-              onClick={() => setShowPreview(true)}
-            >
-              Preview
-            </Button>
-          </div>
-          
-          {!showPreview ? (
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Describe your startup using markdown..."
-              rows={12}
-              className="w-full font-mono text-sm"
-            />
-          ) : (
-            <div className="border rounded-md p-4 min-h-[300px] bg-white prose prose-sm max-w-none">
-              <ReactMarkdown>
-                {formData.description || '*No content to preview*'}
-              </ReactMarkdown>
-            </div>
-          )}
-        </div>
-        <p className="text-sm text-gray-500 mt-1">
-          Supports markdown formatting (bold, italic, headers, etc.)
-        </p>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) => handleInputChange('description', e.target.value)}
+          placeholder="Describe your startup..."
+          rows={4}
+          className="w-full"
+        />
       </div>
 
       {/* Tags Field */}
@@ -288,13 +232,16 @@ export function StartupEditForm({
         <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
           Status
         </label>
-        <StatusSelect
+        <Input
+          id="status"
+          type="text"
           value={formData.status}
-          onValueChange={(value) => handleInputChange('status', value)}
-          placeholder="Select status"
+          onChange={(e) => handleInputChange('status', e.target.value)}
+          placeholder="e.g., Pre-seed, Seed, Series A, etc."
+          className="w-full"
         />
         <p className="text-sm text-gray-500 mt-1">
-          Current development or investment status
+          Current funding stage or development status
         </p>
       </div>
 

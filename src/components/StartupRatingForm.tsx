@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Star } from 'lucide-react'
-import { RATING_DIMENSIONS, RatingDimension } from '@/types/startups'
+import { RATING_DIMENSIONS, RatingDimension } from '@/types/startup'
 import { createBrowserClient } from '@supabase/ssr'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
@@ -155,33 +155,30 @@ export function StartupRatingForm({ startupId, userId, onRatingSubmitted }: Star
               onValueChange={val => setVisibility(val as 'public' | 'private' | 'inner-circle')}
               className="flex flex-col gap-2 mt-2"
             >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="public" id="public" />
-                <Label htmlFor="public" className="cursor-pointer">
+              <RadioGroupItem value="public" id="public">
+                <Label htmlFor="public" className="ml-2 cursor-pointer">
                   Public
                   <span className="ml-1 text-xs text-slate-500" title="Visible to everyone.">
                     (Visible to everyone)
                   </span>
                 </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="private" id="private" />
-                <Label htmlFor="private" className="cursor-pointer">
+              </RadioGroupItem>
+              <RadioGroupItem value="private" id="private">
+                <Label htmlFor="private" className="ml-2 cursor-pointer">
                   Private
                   <span className="ml-1 text-xs text-slate-500" title="Only you can see this rating.">
                     (Only you can see this rating)
                   </span>
                 </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="inner-circle" id="inner-circle" />
-                <Label htmlFor="inner-circle" className="cursor-pointer">
+              </RadioGroupItem>
+              <RadioGroupItem value="inner-circle" id="inner-circle">
+                <Label htmlFor="inner-circle" className="ml-2 cursor-pointer">
                   Inner Circle
-                  <span className="ml-1 text-xs text-slate-500" title="Visible to users you give with special access.">
+                  <span className="ml-1 text-xs text-slate-500" title="Visible to users with special access to this startup.">
                     (Visible to users with special access)
                   </span>
                 </Label>
-              </div>
+              </RadioGroupItem>
             </RadioGroup>
           </div>
           {/* End Visibility Selector */}

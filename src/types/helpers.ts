@@ -1,4 +1,4 @@
-import { StartupBase, StartupWithCreator, StartupWithRatings } from './startups'
+import { StartupBase, StartupWithCreator, StartupWithRatings } from './startup'
 
 // Transform StartupBase to StartupWithCreator
 export function toCreatorStartup(base: StartupBase, name = 'You'): StartupWithCreator {

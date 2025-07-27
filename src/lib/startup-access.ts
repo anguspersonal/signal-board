@@ -1,5 +1,5 @@
 import { createClient } from './supabase'
-import { StartupAccess, StartupAccessRole } from '@/types/startups'
+import { StartupAccess, StartupAccessRole } from '@/types/startup'
 import { logger } from './logger'
 
 /**

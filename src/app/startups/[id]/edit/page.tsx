@@ -4,11 +4,11 @@ import { createClient } from '@/lib/supabase'
 import { StartupEditForm } from './StartupEditForm'
 
 type PageProps = {
-  params: Promise<{ id: string }>
+  params?: { id: string }
 }
 
-export default async function EditStartupPage({ params }: PageProps) {
-  const { id } = await params
+export default async function EditStartupPage({ params = { id: '' } }: PageProps) {
+  const { id } = params
 
   // Get authenticated user and profile
   const { user, userProfile } = await getAuthenticatedUser()
