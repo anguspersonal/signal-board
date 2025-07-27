@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import UploadLogo from '@/components/ui/UploadLogo'
+import { StatusSelect } from '@/components/ui/StatusSelect'
 
 export function StartupForm({ userId }: { userId: string }) {
   const router = useRouter()
@@ -17,6 +18,7 @@ export function StartupForm({ userId }: { userId: string }) {
   const [logoPath, setLogoPath] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
+    summary: '',
     description: '',
     tags: '',
     logo_url: '',
@@ -81,6 +83,12 @@ export function StartupForm({ userId }: { userId: string }) {
       return
     }
 
+    if (!formData.summary.trim()) {
+      setError('Startup summary is required')
+      setIsLoading(false)
+      return
+    }
+
     try {
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -98,6 +106,7 @@ export function StartupForm({ userId }: { userId: string }) {
         .insert({
           user_id: userId,
           name: formData.name.trim(),
+          summary: formData.summary.trim() || null,
           description: formData.description.trim() || null,
           tags: tags.length > 0 ? tags : null,
           logo_url: logoUrl || null, // Temporary for now
@@ -182,6 +191,25 @@ export function StartupForm({ userId }: { userId: string }) {
         />
       </div>
 
+      {/* Summary Field */}
+      <div>
+        <label htmlFor="summary" className="block text-sm font-medium text-gray-700 mb-2">
+          Summary *
+        </label>
+        <Textarea
+          id="summary"
+          value={formData.summary}
+          onChange={(e) => handleInputChange('summary', e.target.value)}
+          placeholder="Brief overview of your startup (1-2 sentences)"
+          rows={2}
+          className="w-full"
+          required
+        />
+        <p className="text-sm text-gray-500 mt-1">
+          A concise summary that appears in listings and previews
+        </p>
+      </div>
+
       {/* Description Field */}
       <div>
         <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
@@ -191,10 +219,13 @@ export function StartupForm({ userId }: { userId: string }) {
           id="description"
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
-          placeholder="Describe your startup..."
+          placeholder="Detailed description of your startup, mission, and vision..."
           rows={4}
           className="w-full"
         />
+        <p className="text-sm text-gray-500 mt-1">
+          Provide a comprehensive overview of your startup
+        </p>
       </div>
 
       {/* Tags Field */}
@@ -243,16 +274,13 @@ export function StartupForm({ userId }: { userId: string }) {
         <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
           Status
         </label>
-        <Input
-          id="status"
-          type="text"
+        <StatusSelect
           value={formData.status}
-          onChange={(e) => handleInputChange('status', e.target.value)}
-          placeholder="e.g., Pre-seed, Seed, Series A, etc."
-          className="w-full"
+          onValueChange={(value) => handleInputChange('status', value)}
+          placeholder="Select status"
         />
         <p className="text-sm text-gray-500 mt-1">
-          Current funding stage or development status
+          Current development or investment status
         </p>
       </div>
 

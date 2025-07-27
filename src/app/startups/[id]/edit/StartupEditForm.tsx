@@ -24,6 +24,7 @@ export function StartupEditForm({
   const [logoPath, setLogoPath] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
+    summary: '',
     description: '',
     tags: '',
     logo_url: '',
@@ -80,6 +81,7 @@ export function StartupEditForm({
   useEffect(() => {
     setFormData({
       name: startup.name || '',
+      summary: startup.summary || '',
       description: startup.description || '',
       tags: startup.tags ? startup.tags.join(', ') : '',
       logo_url: startup.logo_url || '',
@@ -102,6 +104,12 @@ export function StartupEditForm({
       return
     }
 
+    if (!formData.summary.trim()) {
+      setError('Startup summary is required')
+      setIsLoading(false)
+      return
+    }
+
     try {
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -118,6 +126,7 @@ export function StartupEditForm({
         .from('startups')
         .update({
           name: formData.name.trim(),
+          summary: formData.summary.trim() || null,
           description: formData.description.trim() || null,
           tags: tags.length > 0 ? tags : null,
           logo_url: logoUrl || formData.logo_url.trim() || null,
@@ -171,6 +180,25 @@ export function StartupEditForm({
         />
       </div>
 
+      {/* Summary Field */}
+      <div>
+        <label htmlFor="summary" className="block text-sm font-medium text-gray-700 mb-2">
+          Summary *
+        </label>
+        <Textarea
+          id="summary"
+          value={formData.summary}
+          onChange={(e) => handleInputChange('summary', e.target.value)}
+          placeholder="Brief overview of your startup (1-2 sentences)"
+          rows={2}
+          className="w-full"
+          required
+        />
+        <p className="text-sm text-gray-500 mt-1">
+          A concise summary that appears in listings and previews
+        </p>
+      </div>
+
       {/* Description Field */}
       <div>
         <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
@@ -180,10 +208,13 @@ export function StartupEditForm({
           id="description"
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
-          placeholder="Describe your startup..."
+          placeholder="Detailed description of your startup, mission, and vision..."
           rows={4}
           className="w-full"
         />
+        <p className="text-sm text-gray-500 mt-1">
+          Provide a comprehensive overview of your startup
+        </p>
       </div>
 
       {/* Tags Field */}
