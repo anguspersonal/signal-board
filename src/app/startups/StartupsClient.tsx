@@ -47,6 +47,7 @@ export function StartupsClient({ startups }: StartupsClientProps) {
   // Filter startups based on search, tags, and status
   const filteredStartups = startups.filter(startup => {
     const matchesSearch = (startup.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                         (startup.summary?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
                          (startup.description?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     const matchesTags = selectedTags.length === 0 || 
                        selectedTags.some(tag => startup.tags?.includes(tag))

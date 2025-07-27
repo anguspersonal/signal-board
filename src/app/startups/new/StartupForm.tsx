@@ -124,7 +124,7 @@ export function StartupForm({ userId }: { userId: string }) {
         return
       }
 
-      // If logoPath exists, move file to final location
+      // If logoPath exists, move file to final location and update logo_url
       if (logoPath && data?.id) {
         const fileName = logoPath.split('/').pop()
         const finalPath = `${data.id}/${fileName}`
@@ -135,18 +135,24 @@ export function StartupForm({ userId }: { userId: string }) {
 
         if (moveError) {
           console.error('Error moving logo file:', moveError)
+          // Continue with startup creation even if logo move fails
         } else {
-          // Get new public URL
+          // Get new public URL after moving the file
           const { data: publicData } = supabase.storage
             .from('startup-logos')
             .getPublicUrl(finalPath)
 
           if (publicData?.publicUrl) {
-            // Update the startup with the new logo URL
-            await supabase
+            // Update the startup with the new logo URL using the final path
+            const { error: updateError } = await supabase
               .from('startups')
               .update({ logo_url: publicData.publicUrl })
               .eq('id', data.id)
+
+            if (updateError) {
+              console.error('Error updating logo URL after file move:', updateError)
+              // Continue with redirect even if logo URL update fails
+            }
           }
         }
       }
@@ -171,6 +177,12 @@ export function StartupForm({ userId }: { userId: string }) {
       ...prev,
       [field]: value
     }))
+  }
+
+  const handleUpload = async (url: string, path?: string) => {
+    // For new startups, we'll store the URL and path in state and save it during form submission
+    setLogoUrl(url)
+    setLogoPath(path || null)
   }
 
   return (
@@ -219,12 +231,12 @@ export function StartupForm({ userId }: { userId: string }) {
           id="description"
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
-          placeholder="Detailed description of your startup, mission, and vision..."
-          rows={4}
-          className="w-full"
+          placeholder="Detailed description of your startup, mission, and vision... (Supports markdown)"
+          rows={6}
+          className="w-full font-mono text-sm"
         />
         <p className="text-sm text-gray-500 mt-1">
-          Provide a comprehensive overview of your startup
+          Provide a comprehensive overview of your startup. Supports markdown formatting.
         </p>
       </div>
 
@@ -309,10 +321,7 @@ export function StartupForm({ userId }: { userId: string }) {
         </label>
         <UploadLogo 
           startupId={`new_${userId}_${Date.now()}`} 
-          onUpload={(url, path) => {
-            setLogoUrl(url)
-            setLogoPath(path || null)
-          }}
+          onUpload={handleUpload}
         />
       </div>
 

@@ -31,6 +31,7 @@ export function DashboardClient({
 
   const filteredStartups = startups.filter(startup => {
     const matchesSearch = (startup.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                         (startup.summary?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
                          (startup.description?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     const matchesTags = selectedTags.length === 0 || 
                        selectedTags.some(tag => startup.tags?.includes(tag))
@@ -39,6 +40,7 @@ export function DashboardClient({
 
   const filteredSavedStartups = savedStartups.filter(startup => {
     const matchesSearch = (startup.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                         (startup.summary?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
                          (startup.description?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     const matchesTags = selectedTags.length === 0 || 
                        selectedTags.some(tag => startup.tags?.includes(tag))

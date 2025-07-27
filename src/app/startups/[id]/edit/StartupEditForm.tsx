@@ -162,6 +162,46 @@ export function StartupEditForm({
     }))
   }
 
+  const handleUpload = async (url: string, path?: string) => {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+
+    // Only update database if we have a valid URL (not empty string from logo removal)
+    if (url) {
+      const { error } = await supabase
+        .from('startups')
+        .update({ logo_url: url })
+        .eq('id', startup.id)
+        .eq('user_id', userId)
+
+      if (error) {
+        console.error('Failed to save logo URL:', error)
+        setError('Failed to save logo URL. Please try again.')
+        return
+      }
+    } else {
+      // Handle logo removal - clear the logo_url
+      const { error } = await supabase
+        .from('startups')
+        .update({ logo_url: null })
+        .eq('id', startup.id)
+        .eq('user_id', userId)
+
+      if (error) {
+        console.error('Failed to remove logo URL:', error)
+        setError('Failed to remove logo. Please try again.')
+        return
+      }
+    }
+
+    // Clear any previous errors and update local state
+    setError('')
+    setLogoUrl(url || null)
+    setLogoPath(path || null)
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Name Field */}
@@ -208,12 +248,12 @@ export function StartupEditForm({
           id="description"
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
-          placeholder="Detailed description of your startup, mission, and vision..."
-          rows={4}
-          className="w-full"
+          placeholder="Detailed description of your startup, mission, and vision... (Supports markdown)"
+          rows={6}
+          className="w-full font-mono text-sm"
         />
         <p className="text-sm text-gray-500 mt-1">
-          Provide a comprehensive overview of your startup
+          Provide a comprehensive overview of your startup. Supports markdown formatting.
         </p>
       </div>
 
@@ -301,10 +341,7 @@ export function StartupEditForm({
         </label>
         <UploadLogo 
           startupId={startup.id} 
-          onUpload={(url: string, path?: string) => {
-            setLogoUrl(url)
-            setLogoPath(path || null)
-          }}
+          onUpload={handleUpload}
           currentLogoUrl={startup.logo_url}
         />
       </div>

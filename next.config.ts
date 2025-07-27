@@ -16,11 +16,11 @@ const nextConfig = {
     ignoreBuildErrors: true, // ⛔ disables typechecking in `next build`
   },
   images: {
-    domains: ['lypsundaqtyyzgicraxm.supabase.co'],
+    domains: [process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '').replace('http://', '') || 'lypsundaqtyyzgicraxm.supabase.co'],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'lypsundaqtyyzgicraxm.supabase.co',
+        hostname: process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '').replace('http://', '') || 'lypsundaqtyyzgicraxm.supabase.co',
         pathname: '/storage/v1/object/public/**',
       },
     ],

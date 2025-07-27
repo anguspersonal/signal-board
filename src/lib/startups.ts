@@ -84,6 +84,7 @@ export async function getUserStartups(userId: string): Promise<StartupWithCreato
     .select(`
       id,
       name,
+      summary,
       description,
       user_id,
       website_url,
@@ -121,6 +122,7 @@ export async function getUserStartupsWithRatings(userId: string): Promise<Startu
     .select(`
       id,
       name,
+      summary,
       description,
       user_id,
       website_url,
@@ -228,6 +230,7 @@ export async function getStartupById(startupId: string): Promise<StartupBase | n
     .select(`
       id,
       name,
+      summary,
       description,
       user_id,
       website_url,
@@ -278,6 +281,7 @@ export async function getStartupWithFullDetails(startupId: string, currentUserId
     .select(`
       id,
       name,
+      summary,
       description,
       user_id,
       website_url,
@@ -426,6 +430,7 @@ export async function getAllVisibleStartupsWithRatings(currentUserId: string): P
     .select(`
       id,
       name,
+      summary,
       description,
       user_id,
       website_url,
@@ -463,6 +468,7 @@ export async function getAllVisibleStartupsWithRatings(currentUserId: string): P
       .select(`
         id,
         name,
+        summary,
         description,
         user_id,
         website_url,
@@ -678,6 +684,7 @@ export async function getUserSavedStartupsWithRatings(userId: string): Promise<S
     .select(`
       id,
       name,
+      summary,
       description,
       user_id,
       website_url,

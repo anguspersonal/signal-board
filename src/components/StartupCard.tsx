@@ -199,7 +199,7 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
 
       <CardContent className="space-y-4">
         <p className="text-sm text-slate-600 line-clamp-2">
-          {startup.description || 'No description provided'}
+          {startup.summary || startup.description || 'No summary provided'}
         </p>
 
         {/* Status */}
