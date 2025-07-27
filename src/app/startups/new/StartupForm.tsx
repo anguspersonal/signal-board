@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import UploadLogo from '@/components/ui/UploadLogo'
+import { StatusSelect } from '@/components/ui/StatusSelect'
 
 export function StartupForm({ userId }: { userId: string }) {
   const router = useRouter()
@@ -243,16 +244,13 @@ export function StartupForm({ userId }: { userId: string }) {
         <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
           Status
         </label>
-        <Input
-          id="status"
-          type="text"
+        <StatusSelect
           value={formData.status}
-          onChange={(e) => handleInputChange('status', e.target.value)}
-          placeholder="e.g., Pre-seed, Seed, Series A, etc."
-          className="w-full"
+          onValueChange={(value) => handleInputChange('status', value)}
+          placeholder="Select status"
         />
         <p className="text-sm text-gray-500 mt-1">
-          Current funding stage or development status
+          Current development or investment status
         </p>
       </div>
 

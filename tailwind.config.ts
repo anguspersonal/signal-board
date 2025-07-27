@@ -136,8 +136,7 @@ const config: Config = {
     },
   },
   plugins: [
-    // Note: If you need line-clamp functionality, install and add @tailwindcss/line-clamp plugin
-    // require('@tailwindcss/line-clamp')
+    require('@tailwindcss/typography'),
   ],
 } as const
 

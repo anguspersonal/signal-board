@@ -1,7 +1,7 @@
 import { getPageLayout, getAuthenticatedUser } from '@/lib/page-layout'
 import { FeedClient } from './FeedClient'
 import { ActivityItem } from '@/types/activity'
-import { StartupWithRatings } from '@/types/startup'
+import { StartupWithRatings } from '@/types/startups'
 
 export default async function FeedPage() {
   // Get authenticated user and profile

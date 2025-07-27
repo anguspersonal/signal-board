@@ -1,6 +1,6 @@
 import { createClient } from './supabase'
 import { toCreatorStartup, toRatedStartup } from '@/types/helpers'
-import { StartupBase, StartupWithCreator, StartupWithRatings } from '@/types/startup'
+import { StartupBase, StartupWithCreator, StartupWithRatings } from '@/types/startups'
 import { logger } from './logger'
 
 // Helper function to fetch average score for a startup
