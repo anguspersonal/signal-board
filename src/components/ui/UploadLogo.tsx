@@ -50,6 +50,11 @@ export default function UploadLogo({ startupId, onUpload, currentLogoUrl }: Uplo
         const fileName = `logo_${timestamp}.${fileExtension}`
         const filePath = `${startupId}/${fileName}`
 
+        console.log('=== UPLOAD LOGO DEBUG ===')
+        console.log('Startup ID:', startupId)
+        console.log('File path:', filePath)
+        console.log('File details:', { name: file.name, size: file.size, type: file.type })
+
         setUploading(true)
 
         try {
@@ -70,6 +75,7 @@ export default function UploadLogo({ startupId, onUpload, currentLogoUrl }: Uplo
                 return
             }
 
+            console.log('Starting file upload to startup-logos bucket...')
             const { error: uploadError } = await supabase.storage
                 .from('startup-logos')
                 .upload(filePath, file, { upsert: true })
@@ -85,23 +91,30 @@ export default function UploadLogo({ startupId, onUpload, currentLogoUrl }: Uplo
                 return
             }
 
+            console.log('File upload successful! Getting public URL...')
+
             const { data } = supabase.storage
                 .from('startup-logos')
                 .getPublicUrl(filePath)
 
             if (data?.publicUrl) {
+                console.log('Public URL generated:', data.publicUrl)
                 setUploadedUrl(data.publicUrl)
                 setCurrentFilePath(filePath)
+                
+                console.log('Calling onUpload callback with URL and path...')
                 if (onUpload.length === 2) {
                     (onUpload as (url: string, path?: string) => void)(data.publicUrl, filePath)
                 } else {
                     (onUpload as (url: string) => void)(data.publicUrl)
                 }
+                console.log('Upload process completed successfully')
             } else {
+                console.error('Failed to get public URL for uploaded file')
                 setError('Failed to get public URL. Please try again.')
             }
         } catch (err) {
-            console.error('Unexpected error:', err)
+            console.error('Unexpected error during upload:', err)
             setError('An unexpected error occurred. Please try again.')
         } finally {
             setUploading(false)

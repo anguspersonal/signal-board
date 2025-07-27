@@ -14,7 +14,6 @@ export function StartupForm({ userId }: { userId: string }) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [logoPath, setLogoPath] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
@@ -101,6 +100,7 @@ export function StartupForm({ userId }: { userId: string }) {
         .map(tag => tag.trim())
         .filter(tag => tag.length > 0)
 
+      // Create startup WITHOUT logo_url initially to avoid saving temporary URLs
       const { data, error: insertError } = await supabase
         .from('startups')
         .insert({
@@ -109,7 +109,7 @@ export function StartupForm({ userId }: { userId: string }) {
           summary: formData.summary.trim() || null,
           description: formData.description.trim() || null,
           tags: tags.length > 0 ? tags : null,
-          logo_url: logoUrl || null, // Temporary for now
+          logo_url: null, // Don't save temporary URL
           website_url: formData.website_url.trim() || null,
           visibility: formData.visibility,
           status: formData.status.trim() || null,
@@ -126,34 +126,48 @@ export function StartupForm({ userId }: { userId: string }) {
 
       // If logoPath exists, move file to final location and update logo_url
       if (logoPath && data?.id) {
-        const fileName = logoPath.split('/').pop()
-        const finalPath = `${data.id}/${fileName}`
+        try {
+          const fileName = logoPath.split('/').pop()
+          const fileExtension = fileName?.split('.').pop()
+          const finalPath = `${data.id}/logo_${Date.now()}.${fileExtension}`
 
-        const { error: moveError } = await supabase.storage
-          .from('startup-logos')
-          .move(logoPath, finalPath)
+          console.log('Moving logo from temp path to final path:', { from: logoPath, to: finalPath })
 
-        if (moveError) {
-          console.error('Error moving logo file:', moveError)
-          // Continue with startup creation even if logo move fails
-        } else {
-          // Get new public URL after moving the file
-          const { data: publicData } = supabase.storage
+          const { error: moveError } = await supabase.storage
             .from('startup-logos')
-            .getPublicUrl(finalPath)
+            .move(logoPath, finalPath)
 
-          if (publicData?.publicUrl) {
-            // Update the startup with the new logo URL using the final path
-            const { error: updateError } = await supabase
-              .from('startups')
-              .update({ logo_url: publicData.publicUrl })
-              .eq('id', data.id)
+          if (moveError) {
+            console.error('Error moving logo file:', moveError)
+            // Continue with startup creation even if logo move fails
+          } else {
+            // Get new public URL after moving the file
+            const { data: publicData } = supabase.storage
+              .from('startup-logos')
+              .getPublicUrl(finalPath)
 
-            if (updateError) {
-              console.error('Error updating logo URL after file move:', updateError)
-              // Continue with redirect even if logo URL update fails
+            if (publicData?.publicUrl) {
+              console.log('Updating startup with final logo URL:', publicData.publicUrl)
+              
+              // Update the startup with the new logo URL using the final path
+              const { error: updateError } = await supabase
+                .from('startups')
+                .update({ logo_url: publicData.publicUrl })
+                .eq('id', data.id)
+
+              if (updateError) {
+                console.error('Error updating logo URL after file move:', updateError)
+                // Continue with redirect even if logo URL update fails
+              } else {
+                console.log('Successfully updated startup with final logo URL')
+              }
+            } else {
+              console.error('Failed to get public URL for moved logo file')
             }
           }
+        } catch (logoError) {
+          console.error('Unexpected error during logo processing:', logoError)
+          // Continue with startup creation even if logo processing fails
         }
       }
 
@@ -180,8 +194,8 @@ export function StartupForm({ userId }: { userId: string }) {
   }
 
   const handleUpload = async (url: string, path?: string) => {
-    // For new startups, we'll store the URL and path in state and save it during form submission
-    setLogoUrl(url)
+    // For new startups, we'll store the URL and path in state only
+    // The URL will be used for UI preview, but won't be saved to DB until after file move
     setLogoPath(path || null)
   }
 
