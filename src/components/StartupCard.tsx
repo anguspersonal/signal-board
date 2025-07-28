@@ -27,6 +27,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { StartupWithRatings } from '@/types/startup'
 import { toggleStartupEngagementClient } from '@/lib/startups-client'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { StartupDetailDrawer } from './startup/StartupDetailDrawer'
 
 interface StartupCardProps {
   startup: StartupWithRatings
@@ -39,6 +41,8 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
   const [user, setUser] = useState<{ id: string } | null>(null)
   const [loading, setLoading] = useState(false)
   const [localStartup, setLocalStartup] = useState(startup)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const isDesktop = useMediaQuery('(min-width: 768px)')
 
   // Get the authenticated user
   useEffect(() => {
@@ -102,6 +106,14 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
     }
   }
 
+  const handleCardClick = () => {
+    if (isDesktop) {
+      setIsDrawerOpen(true)
+    } else {
+      router.push(`/startups/${startup.id}`)
+    }
+  }
+
   const getRatingColor = (rating: number) => {
     if (rating >= 4) return 'text-green-600'
     if (rating >= 3) return 'text-yellow-600'
@@ -114,7 +126,8 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
   }
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200 w-full">
+    <>
+      <Card className="hover:shadow-lg transition-shadow duration-200 w-full cursor-pointer" onClick={handleCardClick}>
       <CardHeader className="pb-3">
         <div className="flex items-start gap-3">
           {/* Logo/Icon - Fixed width but responsive */}
@@ -275,7 +288,14 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
         </div>
 
         <Button 
-          onClick={() => router.push(`/startups/${startup.id}`)}
+          onClick={(e) => {
+            e.stopPropagation()
+            if (isDesktop) {
+              setIsDrawerOpen(true)
+            } else {
+              router.push(`/startups/${startup.id}`)
+            }
+          }}
           variant="outline"
           className="w-full"
         >
@@ -283,5 +303,16 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
         </Button>
       </CardContent>
     </Card>
+
+      {/* Modal Drawer for Desktop */}
+      {isDesktop && (
+        <StartupDetailDrawer
+          isOpen={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+          startup={startup}
+          canViewSensitiveData={startup.visibility === 'public' || startup.user_id === user?.id}
+        />
+      )}
+    </>
   )
 } 
