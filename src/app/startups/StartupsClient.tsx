@@ -14,6 +14,9 @@ import {
 import { Plus, Search, Filter, ArrowUpDown } from 'lucide-react'
 import Link from 'next/link'
 import { StartupWithRatings } from '@/types/startup'
+import { StartupDetailDrawer } from '@/components/startup/StartupDetailDrawer'
+import { cn } from '@/lib/utils'
+import { useDrawer } from '@/components/DrawerContext'
 
 interface StartupsClientProps {
   startups: StartupWithRatings[]
@@ -25,6 +28,7 @@ export function StartupsClient({ startups }: StartupsClientProps) {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<'name' | 'rating' | 'created_at'>('rating')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const { selectedStartupId, setSelectedStartupId } = useDrawer()
 
   // Helper function to get sort display text
   const getSortDisplayText = () => {
@@ -84,6 +88,20 @@ export function StartupsClient({ startups }: StartupsClientProps) {
       return aValue < bValue ? 1 : -1
     }
   })
+
+  // Get the selected startup
+  const selectedStartup = selectedStartupId ? startups.find(s => s.id === selectedStartupId) : null
+
+  // Handle startup card click
+  const handleStartupClick = (startupId: string) => {
+    setSelectedStartupId(startupId)
+  }
+
+  // Handle click away from drawer
+  const handleClickAway = () => {
+    setSelectedStartupId(null)
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -296,26 +314,59 @@ export function StartupsClient({ startups }: StartupsClientProps) {
          )}
       </div>
 
-      {/* Startups Grid */}
-      {sortedStartups.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-gray-500 text-lg mb-2">No startups found</div>
-          <p className="text-gray-400 mb-4">
-            Be the first to add a startup to the platform
-          </p>
-          <Link href="/startups/new">
-            <Button className="whitespace-nowrap">
-              <span className="truncate">Add Your First Startup</span>
-            </Button>
-          </Link>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-          {sortedStartups.map((startup) => (
-            <StartupCard key={startup.id} startup={startup} showOwner={true} />
-          ))}
-        </div>
-      )}
+      {/* Main Content with Grid and Drawer */}
+      <div className="relative">
+        {/* Click-away overlay for drawer */}
+        {selectedStartupId && (
+          <div 
+            className="fixed inset-0 z-30 bg-black bg-opacity-25 md:hidden"
+            onClick={handleClickAway}
+          />
+        )}
+
+        {/* Startups Grid */}
+        {sortedStartups.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-gray-500 text-lg mb-2">No startups found</div>
+            <p className="text-gray-400 mb-4">
+              Be the first to add a startup to the platform
+            </p>
+            <Link href="/startups/new">
+              <Button className="whitespace-nowrap">
+                <span className="truncate">Add Your First Startup</span>
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <div 
+            onClick={handleClickAway}
+            className={cn(
+              "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 transition-all duration-300",
+              selectedStartupId && "lg:grid-cols-1"
+            )}
+          >
+            {sortedStartups.map((startup) => (
+              <div key={startup.id} onClick={(e) => e.stopPropagation()}>
+                <StartupCard 
+                  startup={startup} 
+                  showOwner={true}
+                  onClick={() => handleStartupClick(startup.id)}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Drawer */}
+        {selectedStartupId && selectedStartup && (
+          <StartupDetailDrawer
+            startupId={selectedStartupId}
+            startup={selectedStartup}
+            canViewSensitiveData={selectedStartup.visibility === 'public' || selectedStartup.user_id === selectedStartup.user_id}
+            onClose={() => setSelectedStartupId(null)}
+          />
+        )}
+      </div>
     </div>
   )
 } 

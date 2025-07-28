@@ -28,20 +28,19 @@ import {
 import { StartupWithRatings } from '@/types/startup'
 import { toggleStartupEngagementClient } from '@/lib/startups-client'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
-import { StartupDetailDrawer } from './startup/StartupDetailDrawer'
 
 interface StartupCardProps {
   startup: StartupWithRatings
   showOwner?: boolean
   onUpdate?: () => void
+  onClick?: () => void
 }
 
-export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCardProps) {
+export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: StartupCardProps) {
   const router = useRouter()
   const [user, setUser] = useState<{ id: string } | null>(null)
   const [loading, setLoading] = useState(false)
   const [localStartup, setLocalStartup] = useState(startup)
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
   // Get the authenticated user
@@ -107,8 +106,11 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
   }
 
   const handleCardClick = () => {
-    if (isDesktop) {
-      setIsDrawerOpen(true)
+    if (onClick) {
+      onClick()
+    } else if (isDesktop) {
+      // Fallback to router navigation if no onClick provided
+      router.push(`/startups/${startup.id}`)
     } else {
       router.push(`/startups/${startup.id}`)
     }
@@ -126,8 +128,7 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
   }
 
   return (
-    <>
-      <Card className="hover:shadow-lg transition-shadow duration-200 w-full cursor-pointer" onClick={handleCardClick}>
+    <Card className="hover:shadow-lg transition-shadow duration-200 w-full cursor-pointer" onClick={handleCardClick}>
       <CardHeader className="pb-3">
         <div className="flex items-start gap-3">
           {/* Logo/Icon - Fixed width but responsive */}
@@ -290,8 +291,8 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
         <Button 
           onClick={(e) => {
             e.stopPropagation()
-            if (isDesktop) {
-              setIsDrawerOpen(true)
+            if (onClick) {
+              onClick()
             } else {
               router.push(`/startups/${startup.id}`)
             }
@@ -303,16 +304,5 @@ export function StartupCard({ startup, showOwner = false, onUpdate }: StartupCar
         </Button>
       </CardContent>
     </Card>
-
-      {/* Modal Drawer for Desktop */}
-      {isDesktop && (
-        <StartupDetailDrawer
-          isOpen={isDrawerOpen}
-          onClose={() => setIsDrawerOpen(false)}
-          startup={startup}
-          canViewSensitiveData={startup.visibility === 'public' || startup.user_id === user?.id}
-        />
-      )}
-    </>
   )
 } 

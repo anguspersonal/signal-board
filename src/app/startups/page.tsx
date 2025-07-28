@@ -1,6 +1,6 @@
 import { getPageLayout, getAuthenticatedUser } from '@/lib/page-layout'
 import { getAllVisibleStartupsWithRatings } from '@/lib/startups'
-import { StartupsClient } from './StartupsClient'
+import { StartupsWrapper } from './StartupsWrapper'
 
 export default async function StartupsPage() {
   // Get authenticated user and profile
@@ -12,6 +12,12 @@ export default async function StartupsPage() {
   return getPageLayout(
     user,
     userProfile,
-    <StartupsClient startups={startups} />
+    <StartupsWrapper startups={startups} />,
+    {
+      sideNavigationProps: {
+        // This will be overridden by the client component
+        forceCollapsed: false
+      }
+    }
   )
 } 

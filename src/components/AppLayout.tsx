@@ -1,25 +1,28 @@
+import { DrawerProvider } from './DrawerContext'
+
 interface AppLayoutProps {
   navigation: React.ReactNode
   sideNavigation: React.ReactNode
-  children: React.ReactNode
 }
 
-export function AppLayout({ children, navigation, sideNavigation }: AppLayoutProps) {
+export function AppLayout({ children, navigation, sideNavigation }: AppLayoutProps & { children?: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top Navigation */}
-      {navigation}
-      
-      {/* Main Content with Side Navigation */}
-      <div className="flex">
-        {/* Side Navigation */}
-        {sideNavigation}
+    <DrawerProvider>
+      <div className="min-h-screen bg-gray-50">
+        {/* Top Navigation */}
+        {navigation}
         
-        {/* Main Content Area */}
-        <main className="flex-1 p-6">
-          {children}
-        </main>
+        {/* Main Content with Side Navigation */}
+        <div className="flex">
+          {/* Side Navigation */}
+          {sideNavigation}
+          
+          {/* Main Content Area */}
+          <main className="flex-1 p-6">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </DrawerProvider>
   )
 } 

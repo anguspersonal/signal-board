@@ -14,6 +14,7 @@ interface User {
 interface PageLayoutOptions {
   requireAuth?: boolean
   fetchUserProfile?: boolean
+  sideNavigationProps?: Record<string, unknown>
 }
 
 /**
@@ -30,7 +31,7 @@ export async function getPageLayout(
   children: React.ReactNode,
   options: PageLayoutOptions = {}
 ): Promise<React.ReactElement> {
-  const { requireAuth = true, fetchUserProfile = false } = options
+  const { requireAuth = true, fetchUserProfile = false, sideNavigationProps = {} } = options
 
   // Handle authentication
   if (requireAuth && !user) {
@@ -43,13 +44,14 @@ export async function getPageLayout(
     finalUserProfile = await getUserProfileServer(user.id)
   }
 
-  // eslint-disable-next-line react/no-children-prop
-  return React.createElement(AppLayout, {
-    navigation: React.createElement(Navigation, { user, userProfile: finalUserProfile }),
-    sideNavigation: React.createElement(SideNavigation),
-    children // ✅ explicitly included
-  })
-  
+  return React.createElement(
+    AppLayout,
+    {
+      navigation: React.createElement(Navigation, { user, userProfile: finalUserProfile }),
+      sideNavigation: React.createElement(SideNavigation, sideNavigationProps)
+    },
+    children
+  )
 }
 
 /**
