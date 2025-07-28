@@ -33,7 +33,7 @@ interface StartupCardProps {
   startup: StartupWithRatings
   showOwner?: boolean
   onUpdate?: () => void
-  onClick?: () => void
+  onClick?: (id: string) => void
 }
 
 export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: StartupCardProps) {
@@ -107,7 +107,7 @@ export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: S
 
   const handleCardClick = () => {
     if (onClick) {
-      onClick()
+      onClick(startup.id)
     } else if (isDesktop) {
       // Fallback to router navigation if no onClick provided
       router.push(`/startups/${startup.id}`)
@@ -292,7 +292,7 @@ export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: S
           onClick={(e) => {
             e.stopPropagation()
             if (onClick) {
-              onClick()
+              onClick(startup.id)
             } else {
               router.push(`/startups/${startup.id}`)
             }

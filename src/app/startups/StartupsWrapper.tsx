@@ -8,5 +8,11 @@ interface StartupsWrapperProps {
 }
 
 export function StartupsWrapper({ startups }: StartupsWrapperProps) {
-  return <StartupsClient startups={startups} />
+  return (
+    <StartupsClient 
+      variant="explore" 
+      startups={startups} 
+      showOwner={true}
+    />
+  )
 } 
