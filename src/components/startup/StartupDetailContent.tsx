@@ -151,7 +151,8 @@ export function StartupDetailContent({ startup, canViewSensitiveData }: StartupD
               onClick={handleEdit}
             >
               <Edit className="w-4 h-4 mr-2" />
-              Edit
+              <span className="md:hidden truncate">Edit</span>
+              <span className="hidden md:inline truncate">Edit</span>
             </Button>
           )}
           {user && (
@@ -163,7 +164,8 @@ export function StartupDetailContent({ startup, canViewSensitiveData }: StartupD
                 disabled={isLoading}
               >
                 <Heart className={`w-4 h-4 mr-2 ${localStartup.saved ? 'fill-current' : ''}`} />
-                {localStartup.saved ? 'Saved' : 'Save'}
+                <span className="md:hidden truncate">{localStartup.saved ? 'Saved' : 'Save'}</span>
+                <span className="hidden md:inline truncate">{localStartup.saved ? 'Saved' : 'Save'}</span>
               </Button>
               <Button 
                 variant={localStartup.interested ? "default" : "outline"} 
@@ -172,13 +174,15 @@ export function StartupDetailContent({ startup, canViewSensitiveData }: StartupD
                 disabled={isLoading}
               >
                 <MessageCircle className={`w-4 h-4 mr-2 ${localStartup.interested ? 'fill-current' : ''}`} />
-                {localStartup.interested ? 'Interested' : 'Express Interest'}
+                <span className="md:hidden truncate">{localStartup.interested ? 'Interested' : 'Interest'}</span>
+                <span className="hidden md:inline truncate">{localStartup.interested ? 'Interested' : 'Express Interest'}</span>
               </Button>
             </>
           )}
           <Button variant="outline" size="sm" onClick={handleShare}>
             <Share2 className="w-4 h-4 mr-2" />
-            Share
+            <span className="md:hidden truncate">Share</span>
+            <span className="hidden md:inline truncate">Share</span>
           </Button>
           {startup.website_url && (
             <a 
@@ -288,7 +292,8 @@ export function StartupDetailContent({ startup, canViewSensitiveData }: StartupD
                   size="sm"
                   onClick={() => setShowRatingForm(!showRatingForm)}
                 >
-                  {showRatingForm ? 'Cancel' : 'Rate Startup'}
+                  <span className="md:hidden truncate">{showRatingForm ? 'Cancel' : 'Rate'}</span>
+                  <span className="hidden md:inline truncate">{showRatingForm ? 'Cancel' : 'Rate Startup'}</span>
                 </Button>
               )}
             </CardTitle>
