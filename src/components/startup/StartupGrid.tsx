@@ -19,9 +19,9 @@ export function StartupGrid({
 }: StartupGridProps) {
   if (startups.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="text-gray-500 text-lg mb-2">No startups found</div>
-        <p className="text-gray-400 mb-4">
+      <div className="py-12 text-center">
+        <div className="mb-2 text-lg text-gray-500">No startups found</div>
+        <p className="mb-4 text-gray-400">
           Be the first to add a startup to the platform
         </p>
       </div>
@@ -31,7 +31,7 @@ export function StartupGrid({
   return (
     <div 
       className={cn(
-        "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 transition-all duration-300",
+        "grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3 transition-all duration-300",
         className
       )}
     >

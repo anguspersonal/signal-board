@@ -206,10 +206,11 @@ export default function Home() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {!isLogin && (
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1">
                       Full Name
                     </label>
                     <Input
+                      id="name"
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -221,10 +222,11 @@ export default function Home() {
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                  <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
                     Email Address
                   </label>
                   <Input
+                    id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}

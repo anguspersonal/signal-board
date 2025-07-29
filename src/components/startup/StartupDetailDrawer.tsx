@@ -42,28 +42,28 @@ export function StartupDetailDrawer({
 
   return (
     <div 
-      className="fixed right-0 top-16 h-[calc(100vh-4rem)] w-full md:w-[480px] bg-white shadow-xl z-40 border-l border-gray-200 overflow-hidden"
+      className="fixed right-0 top-16 z-40 h-[calc(100vh-4rem)] w-full overflow-hidden border-l border-gray-200 bg-white shadow-xl md:w-[480px]"
       onClick={(e) => e.stopPropagation()}
       role="dialog"
       aria-modal="true"
       aria-labelledby="drawer-title"
     >
       {/* Sticky Header */}
-      <div className="sticky top-0 z-50 bg-white border-b border-gray-200 p-4">
+      <div className="sticky top-0 z-50 border-b border-gray-200 bg-white p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {startup.logo_url && (
-              <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100">
+              <div className="h-10 w-10 overflow-hidden rounded-lg bg-gray-100">
                 <Image
                   src={startup.logo_url}
                   alt={startup.name ? `${startup.name} logo` : 'Startup logo'}
                   width={40}
                   height={40}
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                 />
               </div>
             )}
-            <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 flex-1 flex-col">
               <h2 id="drawer-title" className="text-lg font-semibold text-slate-900 truncate">
                 {startup.name}
               </h2>
@@ -91,7 +91,7 @@ export function StartupDetailDrawer({
               className="h-8 w-8 p-0"
               aria-label="Open full page"
             >
-              <ArrowUpRightFromSquare className="w-4 h-4" />
+              <ArrowUpRightFromSquare className="h-4 w-4" />
             </Button>
             <Button 
               onClick={onClose} 
@@ -100,7 +100,7 @@ export function StartupDetailDrawer({
               className="h-8 w-8 p-0"
               aria-label="Close drawer"
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4" />
             </Button>
           </div>
         </div>

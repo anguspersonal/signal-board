@@ -116,17 +116,17 @@ export function ExploreGridClient({ variant, startups, showOwner = true }: Explo
     <div className={variant === 'dashboard' ? 'space-y-4' : 'space-y-8'}>
       {/* Header - Only show for explore variant */}
       {variant === 'explore' && (
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Startups</h1>
-            <p className="text-slate-600 mt-1">
+            <p className="mt-1 text-slate-600">
               Discover and explore early-stage startups
             </p>
           </div>
           <Link href="/startups/new">
             <Button className="flex items-center gap-2 whitespace-nowrap">
               <Plus className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate hidden sm:inline">Add Startup</span>
+              <span className="hidden truncate sm:inline">Add Startup</span>
             </Button>
           </Link>
         </div>
@@ -134,10 +134,10 @@ export function ExploreGridClient({ variant, startups, showOwner = true }: Explo
 
       {/* Search and Filters - Only show for explore variant */}
       {variant === 'explore' && (
-        <div className="bg-card rounded-lg shadow-sm border p-6 space-y-4">
+        <div className="space-y-4 rounded-lg border bg-card p-6 shadow-sm">
           <div className="flex gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
               <Input
                 placeholder="Search startups..."
                 value={searchTerm}
@@ -150,80 +150,80 @@ export function ExploreGridClient({ variant, startups, showOwner = true }: Explo
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
-                  <Filter className="h-4 w-4 mr-2" />
+                  <Filter className="mr-2 h-4 w-4" />
                   Filters
                 </Button>
               </DropdownMenuTrigger>
-                           <DropdownMenuContent align="end" className="w-64">
-                 <div className="p-3 space-y-4">
-                   {/* Tags Filter */}
-                   <div>
-                     <div className="text-sm font-medium mb-2">Filter by Tags</div>
-                     <div className="flex flex-wrap gap-1">
-                       {allTags.slice(0, 8).map(tag => (
-                         <Badge
-                           key={tag}
-                           variant={selectedTags.includes(tag) ? "default" : "outline"}
-                           className="cursor-pointer text-xs"
-                           onClick={() => setSelectedTags(prev => 
-                             prev.includes(tag) 
-                               ? prev.filter(t => t !== tag)
-                               : [...prev, tag]
-                           )}
-                         >
-                           {tag}
-                         </Badge>
-                       ))}
-                     </div>
-                   </div>
+              <DropdownMenuContent align="end" className="w-64">
+                <div className="space-y-4 p-3">
+                  {/* Tags Filter */}
+                  <div>
+                    <div className="mb-2 text-sm font-medium">Filter by Tags</div>
+                    <div className="flex flex-wrap gap-1">
+                      {allTags.slice(0, 8).map(tag => (
+                        <Badge
+                          key={tag}
+                          variant={selectedTags.includes(tag) ? "default" : "outline"}
+                          className="cursor-pointer text-xs"
+                          onClick={() => setSelectedTags(prev => 
+                            prev.includes(tag) 
+                              ? prev.filter(t => t !== tag)
+                              : [...prev, tag]
+                          )}
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
 
-                   {/* Status Filter */}
-                   {allStatuses.length > 0 && (
-                     <div>
-                       <div className="text-sm font-medium mb-2">Filter by Status</div>
-                       <div className="flex flex-wrap gap-1">
-                         {allStatuses.map(status => (
-                           <Badge
-                             key={status}
-                             variant={selectedStatuses.includes(status) ? "default" : "outline"}
-                             className="cursor-pointer text-xs"
-                             onClick={() => setSelectedStatuses(prev => 
-                               prev.includes(status) 
-                                 ? prev.filter(s => s !== status)
-                                 : [...prev, status]
-                             )}
-                           >
-                             {status}
-                           </Badge>
-                         ))}
-                       </div>
-                     </div>
-                   )}
+                  {/* Status Filter */}
+                  {allStatuses.length > 0 && (
+                    <div>
+                      <div className="mb-2 text-sm font-medium">Filter by Status</div>
+                      <div className="flex flex-wrap gap-1">
+                        {allStatuses.map(status => (
+                          <Badge
+                            key={status}
+                            variant={selectedStatuses.includes(status) ? "default" : "outline"}
+                            className="cursor-pointer text-xs"
+                            onClick={() => setSelectedStatuses(prev => 
+                              prev.includes(status) 
+                                ? prev.filter(s => s !== status)
+                                : [...prev, status]
+                            )}
+                          >
+                            {status}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-                   {/* Clear All Filters */}
-                   {(selectedTags.length > 0 || selectedStatuses.length > 0) && (
-                     <Button
-                       variant="ghost"
-                       size="sm"
-                       onClick={() => {
-                         setSelectedTags([])
-                         setSelectedStatuses([])
-                       }}
-                       className="w-full"
-                     >
-                       Clear All Filters
-                     </Button>
-                   )}
-                 </div>
-               </DropdownMenuContent>
+                  {/* Clear All Filters */}
+                  {(selectedTags.length > 0 || selectedStatuses.length > 0) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedTags([])
+                        setSelectedStatuses([])
+                      }}
+                      className="w-full"
+                    >
+                      Clear All Filters
+                    </Button>
+                  )}
+                </div>
+              </DropdownMenuContent>
             </DropdownMenu>
-
+            
             {/* Sort Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="min-w-[120px] justify-between">
                   <div className="flex items-center">
-                    <ArrowUpDown className="h-4 w-4 mr-2" />
+                    <ArrowUpDown className="mr-2 h-4 w-4" />
                     <span className="text-sm">{getSortDisplayText()}</span>
                   </div>
                 </Button>
@@ -299,32 +299,32 @@ export function ExploreGridClient({ variant, startups, showOwner = true }: Explo
             </DropdownMenu>
           </div>
 
-                   {/* Active Filters Display */}
-           {(selectedTags.length > 0 || selectedStatuses.length > 0) && (
-             <div className="flex flex-wrap gap-2">
-               <span className="text-sm text-muted-foreground">Active filters:</span>
-               {selectedTags.map(tag => (
-                 <Badge
-                   key={tag}
-                   variant="default"
-                   className="cursor-pointer"
-                   onClick={() => setSelectedTags(prev => prev.filter(t => t !== tag))}
-                 >
-                   {tag} ×
-                 </Badge>
-               ))}
-               {selectedStatuses.map(status => (
-                 <Badge
-                   key={status}
-                   variant="default"
-                   className="cursor-pointer"
-                   onClick={() => setSelectedStatuses(prev => prev.filter(s => s !== status))}
-                 >
-                   {status} ×
-                 </Badge>
-               ))}
-             </div>
-           )}
+          {/* Active Filters Display */}
+          {(selectedTags.length > 0 || selectedStatuses.length > 0) && (
+            <div className="flex flex-wrap gap-2">
+              <span className="text-sm text-muted-foreground">Active filters:</span>
+              {selectedTags.map(tag => (
+                <Badge
+                  key={tag}
+                  variant="default"
+                  className="cursor-pointer"
+                  onClick={() => setSelectedTags(prev => prev.filter(t => t !== tag))}
+                >
+                  {tag} ×
+                </Badge>
+              ))}
+              {selectedStatuses.map(status => (
+                <Badge
+                  key={status}
+                  variant="default"
+                  className="cursor-pointer"
+                  onClick={() => setSelectedStatuses(prev => prev.filter(s => s !== status))}
+                >
+                  {status} ×
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

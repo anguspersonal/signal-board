@@ -29,6 +29,7 @@ import {
 import { StartupWithRatings } from '@/types/startup'
 import { toggleStartupEngagementClient } from '@/lib/startups-client'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { getRatingColor, formatRating, getMockUser } from '@/lib/utils'
 
 interface StartupCardProps {
   startup: StartupWithRatings
@@ -39,7 +40,7 @@ interface StartupCardProps {
 
 export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: StartupCardProps) {
   const router = useRouter()
-  const [user, setUser] = useState<{ id: string } | null>(null)
+  const [user, setUser] = useState<{ id: string } | null>(getMockUser())
   const [loading, setLoading] = useState(false)
   const [localStartup, setLocalStartup] = useState(startup)
   const isDesktop = useMediaQuery('(min-width: 768px)')
@@ -117,21 +118,10 @@ export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: S
     }
   }
 
-  const getRatingColor = (rating: number) => {
-    if (rating >= 4) return 'text-green-600'
-    if (rating >= 3) return 'text-yellow-600'
-    return 'text-red-600'
-  }
-
-  const formatRating = (rating?: number) => {
-    if (!rating) return 'Not rated'
-    return rating.toFixed(1)
-  }
-
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200 w-full cursor-pointer" onClick={handleCardClick}>
+    <Card className="cursor-pointer transition-shadow duration-200 w-full hover:shadow-lg" onClick={handleCardClick}>
       <CardHeader className="pb-3">
-        <div className="flex items-start gap-3">
+        <div className="flex gap-3 items-start">
           {/* Logo/Icon - Fixed width but responsive */}
           <div className="flex-shrink-0">
             {startup.logo_url ? (
@@ -140,12 +130,12 @@ export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: S
                 alt={startup.name || 'Startup'}
                 width={48}
                 height={48}
-                className="rounded-lg object-cover w-10 h-10 sm:w-12 sm:h-12"
+                className="h-10 object-cover rounded-lg sm:h-12 sm:w-12 w-10"
                 unoptimized
               />
             ) : (
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm sm:text-lg">
+              <div className="bg-gradient-to-br flex from-blue-500 h-10 items-center justify-center rounded-lg sm:h-12 sm:w-12 to-purple-600 w-10">
+                <span className="font-bold sm:text-lg text-sm text-white">
                   {(startup.name || 'S').charAt(0).toUpperCase()}
                 </span>
               </div>
@@ -153,9 +143,9 @@ export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: S
           </div>
           
           {/* Title and Owner Info - Flexible width with proper truncation */}
-          <div className="flex-1 min-w-0 flex flex-col">
-            <div className="flex items-start justify-between gap-2">
-              <CardTitle className="text-base sm:text-lg truncate leading-tight">
+          <div className="flex flex-1 flex-col min-w-0">
+            <div className="flex gap-2 items-start justify-between">
+              <CardTitle className="leading-tight text-base truncate sm:text-lg">
                 {startup.name || 'Unnamed Startup'}
               </CardTitle>
               
@@ -163,7 +153,7 @@ export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: S
               <div className="flex-shrink-0">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
+                    <Button variant="ghost" size="sm" className="aria-label flex-shrink-0 h-8 p-0 w-8" aria-label="More options">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -185,7 +175,7 @@ export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: S
                       </>
                     ) : (
                       <DropdownMenuItem onClick={handleSaveToggle} disabled={loading}>
-                        <Bookmark className={`mr-2 h-4 w-4 ${localStartup.saved ? 'fill-current' : ''}`} />
+                        <Bookmark className={`fill-current mr-2 h-4 w-4 ${localStartup.saved ? '' : ''}`} />
                         {localStartup.saved ? 'Unsave' : 'Save'}
                       </DropdownMenuItem>
                     )}
@@ -199,13 +189,13 @@ export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: S
             </div>
             
             {showOwner && startup.users && (
-              <div className="flex items-center gap-2 mt-1">
-                <Avatar className="h-4 w-4 flex-shrink-0">
+              <div className="flex gap-2 items-center mt-1">
+                <Avatar className="flex-shrink-0 h-4 w-4">
                   <AvatarFallback className="text-xs">
                     {startup.users.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-xs text-slate-500 truncate">{startup.users.name}</span>
+                <span className="text-slate-500 text-xs truncate">{startup.users.name}</span>
               </div>
             )}
           </div>
@@ -213,13 +203,13 @@ export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: S
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <p className="text-sm text-slate-600 line-clamp-2">
+        <p className="line-clamp-2 text-sm text-slate-600">
           {startup.summary || startup.description || 'No summary provided'}
         </p>
 
         {/* Status */}
         {startup.status && (
-          <div className="flex items-center gap-2">
+          <div className="flex gap-2 items-center">
             <StatusBadge status={startup.status} />
           </div>
         )}
@@ -229,9 +219,10 @@ export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: S
             href={startup.website_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-blue-600 hover:text-blue-700 flex items-center"
+            className="aria-label flex items-center hover:text-blue-700 text-blue-600 text-xs"
+            aria-label={`Visit ${startup.name} website`}
           >
-            <ExternalLink className="h-3 w-3 mr-1 flex-shrink-0" />
+            <ExternalLink className="flex-shrink-0 mr-1 h-3 w-3" />
             <span className="truncate">Visit Website</span>
           </a>
         )}
@@ -240,12 +231,12 @@ export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: S
         {startup.tags && startup.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {startup.tags.slice(0, 3).map(tag => (
-              <Badge key={tag} className="text-xs border">
+              <Badge key={tag} className="border text-xs">
                 {tag}
               </Badge>
             ))}
             {startup.tags.length > 3 && (
-              <Badge className="text-xs border">
+              <Badge className="border text-xs">
                 +{startup.tags.length - 3} more
               </Badge>
             )}
@@ -253,36 +244,37 @@ export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: S
         )}
 
         {/* Rating and Action Buttons */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <Star className={`h-4 w-4 flex-shrink-0 ${startup.avg_rating ? getRatingColor(startup.avg_rating) : 'text-slate-400'}`} />
-            <span className={`text-sm font-medium truncate ${startup.avg_rating ? getRatingColor(startup.avg_rating) : 'text-slate-400'}`}>
+        <div className="flex gap-2 items-center justify-between">
+          <div className="flex flex-1 gap-2 items-center min-w-0">
+            <Star className={`flex-shrink-0 h-4 w-4 ${startup.avg_rating ? getRatingColor(startup.avg_rating) : 'text-slate-400'}`} />
+            <span className={`font-medium text-sm truncate ${startup.avg_rating ? getRatingColor(startup.avg_rating) : 'text-slate-400'}`}>
               {formatRating(startup.avg_rating)}
             </span>
             {startup.visibility === 'public' && (
-              <span className="text-xs text-slate-500 flex-shrink-0">
+              <span className="flex-shrink-0 text-slate-500 text-xs">
                 ({startup.user_ratings?.length || 0} {startup.user_ratings?.length === 1 ? 'rating' : 'ratings'})
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-1 flex-shrink-0">
+          <div className="flex flex-shrink-0 gap-1 items-center">
             {!isOwner && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleSaveToggle}
                 disabled={loading}
-                className="h-8 w-8 p-0"
+                className="aria-label h-8 p-0 w-8"
+                aria-label={localStartup.saved ? 'Unsave startup' : 'Save startup'}
               >
-                <Bookmark className={`h-4 w-4 ${localStartup.saved ? 'fill-current text-blue-600' : 'text-slate-400'}`} />
+                <Bookmark className={`fill-current h-4 text-blue-600 w-4 ${localStartup.saved ? '' : 'text-slate-400'}`} />
               </Button>
             )}
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <MessageCircle className="h-4 w-4 text-slate-400" />
+            <Button variant="ghost" size="sm" className="aria-label h-8 p-0 w-8" aria-label="Comment on startup">
+              <MessageCircle className="h-4 text-slate-400 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <Heart className="h-4 w-4 text-slate-400" />
+            <Button variant="ghost" size="sm" className="aria-label h-8 p-0 w-8" aria-label="Like startup">
+              <Heart className="h-4 text-slate-400 w-4" />
             </Button>
           </div>
         </div>

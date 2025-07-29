@@ -119,10 +119,10 @@ export function StartupRatingForm({ startupId, userId, onRatingSubmitted }: Star
             className="focus:outline-none"
           >
             <Star
-              className={`w-6 h-6 ${
+              className={`h-6 w-6 ${
                 score <= currentScore
-                  ? 'text-yellow-500 fill-current'
-                  : 'text-gray-300 hover:text-yellow-400'
+                  ? 'fill-current text-yellow-500'
+                  : 'hover:text-yellow-400 text-gray-300'
               }`}
             />
           </button>
@@ -190,7 +190,7 @@ export function StartupRatingForm({ startupId, userId, onRatingSubmitted }: Star
             <div key={key} className="space-y-3">
               <div>
                 <h4 className="font-medium text-slate-900">{label}</h4>
-                <p className="text-sm text-slate-600 mb-2">
+                <p className="mb-2 text-sm text-slate-600">
                   {getDimensionDescription(key as RatingDimension)}
                 </p>
                 {renderStars(key as RatingDimension)}
@@ -205,16 +205,16 @@ export function StartupRatingForm({ startupId, userId, onRatingSubmitted }: Star
             </div>
           ))}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
+            <div className="border border-red-200 bg-red-50 px-4 py-3 rounded-md text-red-800">
               {error}
             </div>
           )}
-          <Button
-            type="submit"
+          <Button 
+            type="submit" 
             disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+            className="bg-blue-600 disabled:opacity-50 hover:bg-blue-700 w-full"
           >
-            {isLoading ? 'Submitting...' : 'Submit Ratings'}
+            {isLoading ? 'Submitting...' : 'Submit Rating'}
           </Button>
         </form>
       </CardContent>

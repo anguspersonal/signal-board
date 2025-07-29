@@ -50,7 +50,7 @@ export function SideNavigation({ forceCollapsed = false }: SideNavigationProps) 
 
   return (
     <div className={cn(
-      "bg-white border-r border-gray-200 transition-all duration-300 ease-in-out",
+      "bg-white border-gray-200 border-r transition-all duration-300 ease-in-out",
       shouldCollapse ? "w-16" : "w-64"
     )}>
       {/* Toggle Button - Only show when not force collapsed and no startup selected */}
@@ -60,7 +60,7 @@ export function SideNavigation({ forceCollapsed = false }: SideNavigationProps) 
             variant="ghost"
             size="sm"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="h-8 w-8 p-0"
+            className="h-8 p-0 w-8"
           >
             {isCollapsed ? (
               <ChevronRight className="h-4 w-4" />
@@ -83,21 +83,21 @@ export function SideNavigation({ forceCollapsed = false }: SideNavigationProps) 
                 <Button
                   variant="ghost"
                   className={cn(
-                    "w-full justify-start h-10",
-                    isActive && "bg-blue-50 text-blue-700 border-blue-200",
+                    "h-10 justify-start w-full",
+                    isActive && "bg-blue-50 border-blue-200 text-blue-700",
                     shouldCollapse && "justify-center px-2"
                   )}
                   onClick={() => handleNavigation(item.href)}
                 >
                   <Icon className={cn(
-                    "h-4 w-4 flex-shrink-0",
+                    "flex-shrink-0 h-4 w-4",
                     shouldCollapse ? "mr-0" : "mr-3"
                   )} />
                   {!shouldCollapse && (
-                    <span className="flex-1 text-left truncate whitespace-nowrap">{item.name}</span>
+                    <span className="flex-1 truncate text-left whitespace-nowrap">{item.name}</span>
                   )}
                   {item.badge && !shouldCollapse && (
-                    <span className="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex-shrink-0">
+                    <span className="bg-blue-100 flex-shrink-0 ml-auto rounded-full px-2 py-1 text-blue-800 text-xs">
                       {item.badge}
                     </span>
                   )}
@@ -106,7 +106,7 @@ export function SideNavigation({ forceCollapsed = false }: SideNavigationProps) 
               {shouldCollapse && (
                 <div
                   className={cn(
-                    "absolute left-full ml-2 bg-gray-900 text-white text-sm px-2 py-1 rounded shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity",
+                    "absolute bg-gray-900 left-full ml-2 px-2 py-1 rounded shadow-lg text-sm text-white transition-opacity whitespace-nowrap opacity-0 group-hover:opacity-100",
                     isActive && "bg-blue-600"
                   )}
                   style={{ 

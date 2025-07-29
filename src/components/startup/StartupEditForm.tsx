@@ -314,8 +314,9 @@ export function StartupEditForm({
           rows={2}
           className="w-full"
           required
+          aria-describedby="summary-help"
         />
-        <p className="text-sm text-gray-500 mt-1">
+        <p id="summary-help" className="text-sm text-gray-500 mt-1">
           A concise summary that appears in listings and previews
         </p>
       </div>
@@ -332,8 +333,9 @@ export function StartupEditForm({
           placeholder="Detailed description of your startup, mission, and vision... (Supports markdown)"
           rows={6}
           className="w-full font-mono text-sm"
+          aria-describedby="description-help"
         />
-        <p className="text-sm text-gray-500 mt-1">
+        <p id="description-help" className="text-sm text-gray-500 mt-1">
           Provide a comprehensive overview of your startup. Supports markdown formatting.
         </p>
       </div>
@@ -350,8 +352,9 @@ export function StartupEditForm({
           onChange={(e) => handleInputChange('tags', e.target.value)}
           placeholder="tech, saas, fintech (comma-separated)"
           className="w-full"
+          aria-describedby="tags-help"
         />
-        <p className="text-sm text-gray-500 mt-1">
+        <p id="tags-help" className="text-sm text-gray-500 mt-1">
           Add relevant tags to help others discover your startup
         </p>
       </div>
@@ -365,7 +368,7 @@ export function StartupEditForm({
           value={formData.visibility}
           onValueChange={(value) => handleInputChange('visibility', value)}
         >
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full" aria-describedby="visibility-help">
             <SelectValue placeholder="Select visibility" />
           </SelectTrigger>
           <SelectContent>
@@ -374,7 +377,7 @@ export function StartupEditForm({
             <SelectItem value="private">Private</SelectItem>
           </SelectContent>
         </Select>
-        <p className="text-sm text-gray-500 mt-1">
+        <p id="visibility-help" className="text-sm text-gray-500 mt-1">
           Control who can see your startup
         </p>
       </div>
@@ -388,7 +391,7 @@ export function StartupEditForm({
           value={formData.status}
           onValueChange={(value) => handleInputChange('status', value)}
         />
-        <p className="text-sm text-gray-500 mt-1">
+        <p id="status-help" className="text-sm text-gray-500 mt-1">
           Current funding stage or development status
         </p>
       </div>
@@ -405,8 +408,9 @@ export function StartupEditForm({
           placeholder="What are you looking for? (investors, advisors, partnerships, etc.)"
           rows={3}
           className="w-full"
+          aria-describedby="asks-help"
         />
-        <p className="text-sm text-gray-500 mt-1">
+        <p id="asks-help" className="text-sm text-gray-500 mt-1">
           Describe what you're seeking from the network
         </p>
       </div>
@@ -440,7 +444,7 @@ export function StartupEditForm({
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md" role="alert" aria-live="assertive">
           {error}
         </div>
       )}

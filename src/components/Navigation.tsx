@@ -67,18 +67,18 @@ export function Navigation({
 
   return (
     <nav className="bg-background border-b border-border sticky top-0 z-50">
-      <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="px-4 sm:px-6 w-full lg:px-8">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo and Brand */}
           <div className="flex items-center">
             <div 
-              className="flex items-center space-x-2 cursor-pointer"
+              className="flex cursor-pointer items-center space-x-2"
               onClick={() => router.push('/dashboard')}
             >
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">Sn</span>
+              <div className="bg-gradient-to-br flex h-8 w-8 items-center justify-center rounded-lg from-blue-600 to-purple-600">
+                <span className="text-sm font-bold text-white">Sn</span>
               </div>
-              <span className="text-xl font-bold text-foreground">StartIn</span>
+              <span className="text-foreground text-xl font-bold">StartIn</span>
             </div>
           </div>
 
@@ -96,7 +96,7 @@ export function Navigation({
             >
               <Bell className="h-4 w-4" />
               {notifications > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -right-1 -top-1 bg-red-500 flex h-5 w-5 items-center justify-center rounded-full text-xs text-white">
                   {notifications}
                 </span>
               )}

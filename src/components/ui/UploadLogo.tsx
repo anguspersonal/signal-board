@@ -195,7 +195,7 @@ export default function UploadLogo({ startupId, onUpload, currentLogoUrl }: Uplo
                             onClick={handleReselect}
                             disabled={uploading}
                             className="text-blue-600 hover:text-blue-700"
-                            title="Select different image"
+                            aria-label="Select different image"
                         >
                             <RefreshCw className="h-4 w-4" />
                         </Button>
@@ -206,7 +206,7 @@ export default function UploadLogo({ startupId, onUpload, currentLogoUrl }: Uplo
                             onClick={handleRemoveLogo}
                             disabled={uploading}
                             className="text-red-600 hover:text-red-700"
-                            title="Remove logo"
+                            aria-label="Remove logo"
                         >
                             <X className="h-4 w-4" />
                         </Button>
@@ -222,6 +222,7 @@ export default function UploadLogo({ startupId, onUpload, currentLogoUrl }: Uplo
                     onChange={handleFileChange}
                     disabled={uploading}
                     className={uploadedUrl ? 'hidden' : ''}
+                    aria-label="Upload startup logo"
                 />
                 {!uploadedUrl && (
                     <p className="text-xs text-gray-500">
@@ -232,7 +233,7 @@ export default function UploadLogo({ startupId, onUpload, currentLogoUrl }: Uplo
 
             {/* Upload status */}
             {uploading && (
-                <div className="flex items-center space-x-2 text-sm text-blue-600">
+                <div className="flex items-center space-x-2 text-sm text-blue-600" role="status" aria-live="polite">
                     <Upload className="h-4 w-4 animate-pulse" />
                     <span>Uploading logo...</span>
                 </div>
@@ -240,7 +241,7 @@ export default function UploadLogo({ startupId, onUpload, currentLogoUrl }: Uplo
 
             {/* Success message */}
             {uploadedUrl && !uploading && (
-                <div className="flex items-center space-x-2 text-sm text-green-600">
+                <div className="flex items-center space-x-2 text-sm text-green-600" role="status" aria-live="polite">
                     <CheckCircle className="h-4 w-4" />
                     <span>Logo uploaded successfully</span>
                 </div>
@@ -248,7 +249,7 @@ export default function UploadLogo({ startupId, onUpload, currentLogoUrl }: Uplo
 
             {/* Error message */}
             {error && (
-                <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                <div className="text-sm text-red-600 bg-red-50 p-2 rounded" role="alert" aria-live="assertive">
                     {error}
                 </div>
             )}
