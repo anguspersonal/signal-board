@@ -7,24 +7,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { StartupBase } from '@/types/startup'
 import UploadLogo from '@/components/ui/UploadLogo'
 import { StatusSelect } from '@/components/ui/StatusSelect'
 
-export function StartupEditForm({ 
-  startup, 
-  userId 
-}: {
-  startup: StartupBase
-  userId: string
-}) {
+export function StartupForm({ userId }: { userId: string }) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [logoUrl, setLogoUrl] = useState<string | null>(startup.logo_url || null)
   const [logoPath, setLogoPath] = useState<string | null>(null)
-  const [oldLogoPath, setOldLogoPath] = useState<string | null>(null)
-  const [isLogoUploaded, setIsLogoUploaded] = useState(false) // Track if logo was uploaded in this session
   const [formData, setFormData] = useState({
     name: '',
     summary: '',
@@ -37,26 +27,9 @@ export function StartupEditForm({
     asks_and_opportunities: ''
   })
 
-  // Extract old logo path from current logo URL for cleanup
-  useEffect(() => {
-    if (startup.logo_url) {
-      // Extract path from URL: https://xxx.supabase.co/storage/v1/object/public/startup-logos/startupId/filename
-      const urlParts = startup.logo_url.split('/')
-      const startupLogosIndex = urlParts.findIndex(part => part === 'startup-logos')
-      if (startupLogosIndex !== -1 && urlParts.length > startupLogosIndex + 2) {
-        const path = urlParts.slice(startupLogosIndex + 1).join('/')
-        setOldLogoPath(path)
-      }
-    }
-  }, [startup.logo_url])
-
   // Cleanup function to delete uploaded files if form is abandoned
-  // ONLY for files that were uploaded but not yet saved to database
   const cleanupUploadedFiles = useCallback(async () => {
-    // Only cleanup if we have a logoPath AND the logo hasn't been successfully uploaded/saved
-    // For existing startups, we don't want to delete files that were successfully uploaded
-    if (logoPath && !isLogoUploaded) {
-      console.log('Cleaning up unsaved uploaded file:', logoPath)
+    if (logoPath) {
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -66,12 +39,11 @@ export function StartupEditForm({
         await supabase.storage
           .from('startup-logos')
           .remove([logoPath])
-        console.log('Successfully cleaned up unsaved file')
       } catch (err) {
         console.error('Error cleaning up uploaded files:', err)
       }
     }
-  }, [logoPath, isLogoUploaded])
+  }, [logoPath])
 
   // Cleanup on component unmount or when user navigates away
   useEffect(() => {
@@ -95,23 +67,8 @@ export function StartupEditForm({
 
   const handleCancel = async () => {
     await cleanupUploadedFiles()
-    router.push(`/startups/${startup.id}`)
+    router.push('/dashboard')
   }
-
-  // Initialize form data with startup data
-  useEffect(() => {
-    setFormData({
-      name: startup.name || '',
-      summary: startup.summary || '',
-      description: startup.description || '',
-      tags: startup.tags ? startup.tags.join(', ') : '',
-      logo_url: startup.logo_url || '',
-      website_url: startup.website_url || '',
-      visibility: startup.visibility || 'public',
-      status: startup.status || '',
-      asks_and_opportunities: startup.asks_and_opportunities || ''
-    })
-  }, [startup])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -143,36 +100,83 @@ export function StartupEditForm({
         .map(tag => tag.trim())
         .filter(tag => tag.length > 0)
 
-      const { error: updateError } = await supabase
+      // Create startup WITHOUT logo_url initially to avoid saving temporary URLs
+      const { data, error: insertError } = await supabase
         .from('startups')
-        .update({
+        .insert({
+          user_id: userId,
           name: formData.name.trim(),
           summary: formData.summary.trim() || null,
           description: formData.description.trim() || null,
           tags: tags.length > 0 ? tags : null,
-          logo_url: logoUrl || formData.logo_url.trim() || null,
+          logo_url: null, // Don't save temporary URL
           website_url: formData.website_url.trim() || null,
           visibility: formData.visibility,
           status: formData.status.trim() || null,
           asks_and_opportunities: formData.asks_and_opportunities.trim() || null
         })
-        .eq('id', startup.id)
-        .eq('user_id', userId)
+        .select()
+        .single()
 
-      if (updateError) {
-        console.error('Error updating startup:', updateError)
-        setError(updateError.message || 'Failed to update startup')
+      if (insertError) {
+        console.error('Error inserting startup:', insertError)
+        setError(insertError.message || 'Failed to create startup')
         return
       }
 
-      // Mark logo as successfully uploaded and saved
-      if (logoPath) {
-        setIsLogoUploaded(true)
-        console.log('Logo successfully saved to database, marking as uploaded')
+      // If logoPath exists, move file to final location and update logo_url
+      if (logoPath && data?.id) {
+        try {
+          const fileName = logoPath.split('/').pop()
+          const fileExtension = fileName?.split('.').pop()
+          const finalPath = `${data.id}/logo_${Date.now()}.${fileExtension}`
+
+          console.log('Moving logo from temp path to final path:', { from: logoPath, to: finalPath })
+
+          const { error: moveError } = await supabase.storage
+            .from('startup-logos')
+            .move(logoPath, finalPath)
+
+          if (moveError) {
+            console.error('Error moving logo file:', moveError)
+            // Continue with startup creation even if logo move fails
+          } else {
+            // Get new public URL after moving the file
+            const { data: publicData } = supabase.storage
+              .from('startup-logos')
+              .getPublicUrl(finalPath)
+
+            if (publicData?.publicUrl) {
+              console.log('Updating startup with final logo URL:', publicData.publicUrl)
+              
+              // Update the startup with the new logo URL using the final path
+              const { error: updateError } = await supabase
+                .from('startups')
+                .update({ logo_url: publicData.publicUrl })
+                .eq('id', data.id)
+
+              if (updateError) {
+                console.error('Error updating logo URL after file move:', updateError)
+                // Continue with redirect even if logo URL update fails
+              } else {
+                console.log('Successfully updated startup with final logo URL')
+              }
+            } else {
+              console.error('Failed to get public URL for moved logo file')
+            }
+          }
+        } catch (logoError) {
+          console.error('Unexpected error during logo processing:', logoError)
+          // Continue with startup creation even if logo processing fails
+        }
       }
 
-      // Redirect to the startup's page
-      router.push(`/startups/${startup.id}`)
+      // Redirect to the new startup's page or dashboard
+      if (data?.id) {
+        router.push(`/startups/${data.id}`)
+      } else {
+        router.push('/dashboard')
+      }
 
     } catch (err) {
       console.error('Unexpected error:', err)
@@ -190,97 +194,9 @@ export function StartupEditForm({
   }
 
   const handleUpload = async (url: string, path?: string) => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-
-    // Only update database if we have a valid URL (not empty string from logo removal)
-    if (url) {
-      console.log('Saving logo URL to database:', url)
-      const { error } = await supabase
-        .from('startups')
-        .update({ logo_url: url })
-        .eq('id', startup.id)
-        .eq('user_id', userId)
-
-      if (error) {
-        console.error('Failed to save logo URL:', error)
-        setError('Failed to save logo URL. Please try again.')
-        return
-      }
-
-      console.log('Logo URL successfully saved to database')
-
-      // Clean up old logo file if it exists and is different from the new one
-      if (oldLogoPath && oldLogoPath !== path) {
-        try {
-          console.log('Cleaning up old logo file:', oldLogoPath)
-          const { error: deleteError } = await supabase.storage
-            .from('startup-logos')
-            .remove([oldLogoPath])
-
-          if (deleteError) {
-            console.error('Error deleting old logo file:', deleteError)
-            // Continue even if cleanup fails
-          } else {
-            console.log('Successfully cleaned up old logo file')
-            setOldLogoPath(null) // Clear the old path since it's been deleted
-          }
-        } catch (cleanupError) {
-          console.error('Unexpected error during old logo cleanup:', cleanupError)
-          // Continue even if cleanup fails
-        }
-      }
-    } else {
-      // Handle logo removal - clear the logo_url
-      console.log('Removing logo URL from database')
-      const { error } = await supabase
-        .from('startups')
-        .update({ logo_url: null })
-        .eq('id', startup.id)
-        .eq('user_id', userId)
-
-      if (error) {
-        console.error('Failed to remove logo URL:', error)
-        setError('Failed to remove logo. Please try again.')
-        return
-      }
-
-      console.log('Logo URL successfully removed from database')
-
-      // Clean up old logo file when logo is removed
-      if (oldLogoPath) {
-        try {
-          console.log('Cleaning up old logo file after removal:', oldLogoPath)
-          const { error: deleteError } = await supabase.storage
-            .from('startup-logos')
-            .remove([oldLogoPath])
-
-          if (deleteError) {
-            console.error('Error deleting old logo file:', deleteError)
-            // Continue even if cleanup fails
-          } else {
-            console.log('Successfully cleaned up old logo file')
-            setOldLogoPath(null)
-          }
-        } catch (cleanupError) {
-          console.error('Unexpected error during old logo cleanup:', cleanupError)
-          // Continue even if cleanup fails
-        }
-      }
-    }
-
-    // Clear any previous errors and update local state
-    setError('')
-    setLogoUrl(url || null)
+    // For new startups, we'll store the URL and path in state only
+    // The URL will be used for UI preview, but won't be saved to DB until after file move
     setLogoPath(path || null)
-    
-    // Mark that we have successfully uploaded and saved a logo
-    if (url && path) {
-      setIsLogoUploaded(true)
-      console.log('Logo upload completed successfully')
-    }
   }
 
   return (
@@ -387,9 +303,10 @@ export function StartupEditForm({
         <StatusSelect
           value={formData.status}
           onValueChange={(value) => handleInputChange('status', value)}
+          placeholder="Select status"
         />
         <p className="text-sm text-gray-500 mt-1">
-          Current funding stage or development status
+          Current development or investment status
         </p>
       </div>
 
@@ -417,9 +334,8 @@ export function StartupEditForm({
           Startup Logo
         </label>
         <UploadLogo 
-          startupId={startup.id} 
+          startupId={`new_${userId}_${Date.now()}`} 
           onUpload={handleUpload}
-          currentLogoUrl={startup.logo_url}
         />
       </div>
 
@@ -452,7 +368,14 @@ export function StartupEditForm({
           disabled={isLoading}
           className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
         >
-          {isLoading ? 'Updating...' : 'Update Startup'}
+          {isLoading ? (
+            <span className="hidden sm:inline">Creating...</span>
+          ) : (
+            <>
+              <span className="sm:hidden">Create</span>
+              <span className="hidden sm:inline">Create Startup</span>
+            </>
+          )}
         </Button>
         <Button
           type="button"
@@ -465,4 +388,4 @@ export function StartupEditForm({
       </div>
     </form>
   )
-} 
+}

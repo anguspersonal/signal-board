@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getPageLayout, getAuthenticatedUser } from '@/lib/page-layout'
 import { createClient } from '@/lib/supabase'
-import { StartupEditForm } from './StartupEditForm'
+import { StartupEditForm } from '@/components/startup/StartupEditForm'
 
 type PageProps = {
   params?: Promise<{ id: string }>

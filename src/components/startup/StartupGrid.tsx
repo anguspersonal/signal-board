@@ -1,6 +1,6 @@
 'use client'
 
-import { StartupCard } from '@/components/StartupCard'
+import { StartupCard } from './StartupCard'
 import { StartupWithRatings } from '@/types/startup'
 import { cn } from '@/lib/utils'
 

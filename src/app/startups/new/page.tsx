@@ -1,5 +1,5 @@
 import { getPageLayout, getAuthenticatedUser } from '@/lib/page-layout'
-import { StartupForm } from './StartupForm'
+import { StartupForm } from '@/components/startup/StartupForm'
 
 export default async function NewStartupPage() {
   // Get authenticated user and profile

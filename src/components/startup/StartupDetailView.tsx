@@ -16,4 +16,4 @@ export function StartupDetailView({ startup, canViewSensitiveData }: StartupDeta
       canViewSensitiveData={canViewSensitiveData} 
     />
   )
-} 
+}

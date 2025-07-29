@@ -1,6 +1,6 @@
 import { getPageLayout, getAuthenticatedUser } from '@/lib/page-layout'
 import { getAllVisibleStartupsWithRatings } from '@/lib/startups'
-import { StartupsWrapper } from './StartupsWrapper'
+import { ExploreWrapper } from '@/components/startup/ExploreWrapper'
 
 export default async function StartupsPage() {
   // Get authenticated user and profile
@@ -12,7 +12,7 @@ export default async function StartupsPage() {
   return getPageLayout(
     user,
     userProfile,
-    <StartupsWrapper startups={startups} />,
+    <ExploreWrapper startups={startups} />,
     {
       sideNavigationProps: {
         // This will be overridden by the client component

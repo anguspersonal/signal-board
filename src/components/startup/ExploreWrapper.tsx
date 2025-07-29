@@ -1,18 +1,18 @@
 'use client'
 
-import { StartupsClient } from './StartupsClient'
+import { ExploreGridClient } from './ExploreGridClient'
 import { StartupWithRatings } from '@/types/startup'
 
-interface StartupsWrapperProps {
+interface ExploreWrapperProps {
   startups: StartupWithRatings[]
 }
 
-export function StartupsWrapper({ startups }: StartupsWrapperProps) {
+export function ExploreWrapper({ startups }: ExploreWrapperProps) {
   return (
-    <StartupsClient 
+    <ExploreGridClient 
       variant="explore" 
       startups={startups} 
       showOwner={true}
     />
   )
-} 
+}

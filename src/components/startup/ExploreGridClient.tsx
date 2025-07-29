@@ -17,13 +17,13 @@ import { StartupDetailDrawer } from '@/components/startup/StartupDetailDrawer'
 import { StartupGrid } from '@/components/startup/StartupGrid'
 import { useDrawer } from '@/components/DrawerContext'
 
-interface StartupsClientProps {
+interface ExploreGridClientProps {
   variant: 'dashboard' | 'explore'
   startups: StartupWithRatings[]
   showOwner?: boolean
 }
 
-export function StartupsClient({ variant, startups, showOwner = true }: StartupsClientProps) {
+export function ExploreGridClient({ variant, startups, showOwner = true }: ExploreGridClientProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
@@ -360,4 +360,4 @@ export function StartupsClient({ variant, startups, showOwner = true }: Startups
       </div>
     </div>
   )
-} 
+}

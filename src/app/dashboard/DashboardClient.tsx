@@ -10,7 +10,7 @@ import { Search, Filter, Plus } from 'lucide-react'
 import { getDisplayName } from '@/lib/profile'
 import { StartupWithRatings } from '@/types/startup'
 import { UserProfile } from '@/lib/profile'
-import { StartupsClient } from '@/app/startups/StartupsClient'
+import { ExploreGridClient } from '@/components/startup/ExploreGridClient'
 
 
 
@@ -112,7 +112,7 @@ export function DashboardClient({
         </TabsList>
 
         <TabsContent value="my-startups" className="space-y-6">
-          <StartupsClient
+          <ExploreGridClient
             variant="dashboard"
             startups={filteredStartups}
             showOwner={false}
@@ -120,7 +120,7 @@ export function DashboardClient({
         </TabsContent>
 
         <TabsContent value="saved" className="space-y-6">
-          <StartupsClient
+          <ExploreGridClient
             variant="dashboard"
             startups={filteredSavedStartups}
             showOwner={true}

@@ -304,4 +304,4 @@ export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: S
       </CardContent>
     </Card>
   )
-} 
+}

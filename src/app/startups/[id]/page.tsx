@@ -1,7 +1,7 @@
 import { getPageLayout, getAuthenticatedUser } from '@/lib/page-layout'
 import { getStartupWithFullDetails, canViewSensitiveData } from '@/lib/startups'
 import { notFound } from 'next/navigation'
-import { StartupDetailView } from './StartupDetailView'
+import { StartupDetailView } from '@/components/startup/StartupDetailView'
 
 interface StartupPageProps {
   params: Promise<{ id: string }>
