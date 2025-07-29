@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo, useEffect } from 'react'
+import { createBrowserClient } from '@supabase/ssr'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -23,13 +24,31 @@ interface ExploreGridClientProps {
   showOwner?: boolean
 }
 
-export function ExploreGridClient({ variant, startups, showOwner = true }: ExploreGridClientProps) {
+export const ExploreGridClient = memo(function ExploreGridClient({ variant, startups, showOwner = true }: ExploreGridClientProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<'name' | 'rating' | 'created_at'>('rating')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [user, setUser] = useState<{ id: string } | null>(null)
   const { selectedStartupId, setSelectedStartupId } = useDrawer()
+
+  // Get the authenticated user
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        )
+        const { data: { user } } = await supabase.auth.getUser()
+        setUser(user)
+      } catch (error) {
+        console.error('Error getting user:', error)
+      }
+    }
+    getUser()
+  }, [])
 
   // Helper function to get sort display text
   const getSortDisplayText = () => {
@@ -353,11 +372,11 @@ export function ExploreGridClient({ variant, startups, showOwner = true }: Explo
           <StartupDetailDrawer
             startupId={selectedStartupId}
             startup={selectedStartup}
-            canViewSensitiveData={selectedStartup.visibility === 'public' || selectedStartup.user_id === selectedStartup.user_id}
+            canViewSensitiveData={selectedStartup.visibility === 'public' || selectedStartup.user_id === user?.id}
             onClose={() => setSelectedStartupId(null)}
           />
         )}
       </div>
     </div>
   )
-}
+})

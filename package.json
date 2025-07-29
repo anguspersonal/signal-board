@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint src --ext .ts,.tsx",
     "cleanup:html-entities": "node scripts/cleanup-html-entities.js",
     "cleanup:html-entities:dry-run": "node scripts/cleanup-html-entities.js --dry-run"
   },

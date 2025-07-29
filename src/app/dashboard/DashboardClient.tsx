@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,19 +12,19 @@ import { StartupWithRatings } from '@/types/startup'
 import { UserProfile } from '@/lib/profile'
 import { ExploreGridClient } from '@/components/startup/ExploreGridClient'
 
-
-
-export function DashboardClient({ 
-  userProfile, 
-  startups, 
-  savedStartups,
-  allTags 
-}: {
+interface DashboardClientProps {
   userProfile: UserProfile | null
   startups: StartupWithRatings[]
   savedStartups: StartupWithRatings[]
   allTags: string[]
-}) {
+}
+
+export const DashboardClient = memo(function DashboardClient({ 
+  userProfile, 
+  startups, 
+  savedStartups,
+  allTags 
+}: DashboardClientProps) {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
@@ -129,4 +129,4 @@ export function DashboardClient({
       </Tabs>
     </div>
   )
-} 
+}) 

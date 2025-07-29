@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -26,7 +26,7 @@ const navigationItems: NavItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Startups', href: '/startups', icon: Building2 },
   { name: 'Activity Feed', href: '/feed', icon: Activity },
-  { name: 'Network', href: '/network', icon: Users },
+  // { name: 'Network', href: '/network', icon: Users },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
@@ -34,7 +34,7 @@ interface SideNavigationProps {
   forceCollapsed?: boolean
 }
 
-export function SideNavigation({ forceCollapsed = false }: SideNavigationProps) {
+export const SideNavigation = memo(function SideNavigation({ forceCollapsed = false }: SideNavigationProps) {
   const router = useRouter()
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -124,4 +124,4 @@ export function SideNavigation({ forceCollapsed = false }: SideNavigationProps) 
       </nav>
     </div>
   )
-} 
+}) 

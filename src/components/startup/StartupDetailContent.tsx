@@ -5,7 +5,7 @@ import { StartupWithRatings } from '@/types/startup'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Star, MessageCircle, Heart, Share2, ExternalLink, Edit } from 'lucide-react'
+import { Star, MessageCircle, Heart, Share2, ExternalLink, Edit, Bookmark } from 'lucide-react'
 import Image from 'next/image'
 import { toggleStartupEngagementClient } from '@/lib/startups-client'
 import { StartupRatingForm } from '@/components/StartupRatingForm'
@@ -125,7 +125,8 @@ export function StartupDetailContent({ startup, canViewSensitiveData }: StartupD
                 width={64}
                 height={64}
                 className="w-full h-full object-cover"
-                unoptimized
+                sizes="64px"
+                priority={false}
               />
             </div>
           )}
@@ -164,7 +165,7 @@ export function StartupDetailContent({ startup, canViewSensitiveData }: StartupD
                 onClick={handleSaveToggle}
                 disabled={isLoading}
               >
-                <Heart className={`w-4 h-4 mr-2 ${localStartup.saved ? 'fill-current' : ''}`} />
+                <Bookmark className={`w-4 h-4 mr-2 ${localStartup.saved ? 'fill-current' : ''}`} />
                 <span className="md:hidden truncate">{localStartup.saved ? 'Saved' : 'Save'}</span>
                 <span className="hidden md:inline truncate">{localStartup.saved ? 'Saved' : 'Save'}</span>
               </Button>
@@ -202,8 +203,8 @@ export function StartupDetailContent({ startup, canViewSensitiveData }: StartupD
       {/* Tags */}
       {startup.tags && startup.tags.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {startup.tags.map((tag, index) => (
-            <Badge key={index} variant="secondary">
+          {startup.tags.map((tag) => (
+            <Badge key={tag} variant="secondary">
               {tag}
             </Badge>
           ))}
@@ -319,7 +320,7 @@ export function StartupDetailContent({ startup, canViewSensitiveData }: StartupD
                         <div className="flex items-center">
                           {[...Array(5)].map((_, i) => (
                             <Star
-                              key={i}
+                              key={`${rating.id}-star-${i}`}
                               className={`w-4 h-4 ${
                                 i < rating.score ? 'text-yellow-500 fill-current' : 'text-gray-300'
                               }`}
@@ -398,13 +399,13 @@ export function StartupDetailContent({ startup, canViewSensitiveData }: StartupD
             {user && (
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
-                  <Heart className={`w-5 h-5 ${localStartup.saved ? 'text-red-500 fill-current' : 'text-gray-400'}`} />
+                  <Bookmark className={`w-5 h-5 ${localStartup.saved ? 'text-blue-500 fill-current' : 'text-gray-400'}`} />
                   <span className="text-sm text-slate-600">
                     {localStartup.saved ? 'You saved this startup' : 'Not saved'}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <MessageCircle className={`w-5 h-5 ${localStartup.interested ? 'text-blue-500 fill-current' : 'text-gray-400'}`} />
+                  <Heart className={`w-5 h-5 ${localStartup.interested ? 'text-red-500 fill-current' : 'text-gray-400'}`} />
                   <span className="text-sm text-slate-600">
                     {localStartup.interested ? 'You expressed interest' : 'No interest expressed'}
                   </span>

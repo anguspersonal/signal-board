@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,13 +20,15 @@ import {
 } from 'lucide-react'
 import { NetworkConnection, SuggestedConnection } from '@/types/network'
 
-export function NetworkClient({ 
-  networkConnections: serverConnections, 
-  suggestedConnections: serverSuggestions 
-}: {
+interface NetworkClientProps {
   networkConnections: NetworkConnection[]
   suggestedConnections: SuggestedConnection[]
-}) {
+}
+
+export const NetworkClient = memo(function NetworkClient({ 
+  networkConnections: serverConnections, 
+  suggestedConnections: serverSuggestions 
+}: NetworkClientProps) {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('all')
@@ -322,4 +324,4 @@ export function NetworkClient({
       </div>
     </div>
   )
-} 
+}) 

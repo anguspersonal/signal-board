@@ -181,7 +181,8 @@ export default function UploadLogo({ startupId, onUpload, currentLogoUrl }: Uplo
                         width={48}
                         height={48}
                         className="object-cover rounded"
-                        unoptimized
+                        sizes="48px"
+                        priority={false}
                     />
                     <div className="flex-1">
                         <p className="text-sm font-medium text-gray-900">Logo uploaded</p>

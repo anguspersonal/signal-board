@@ -4,7 +4,11 @@ import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
 
-export default function UserMenu({ userEmail }: { userEmail: string }) {
+interface UserMenuProps {
+  userEmail: string
+}
+
+export default function UserMenu({ userEmail }: UserMenuProps) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 

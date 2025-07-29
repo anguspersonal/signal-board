@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Plus, X, Search, Play, Pause, XCircle, CheckCircle, Package } from 'lucide-react'
+import { memo } from 'react'
 
 const PREDEFINED_STATUSES = [
   { 
@@ -64,11 +65,11 @@ interface StatusSelectProps {
   className?: string
 }
 
-export function StatusSelect({ 
+export const StatusSelect = memo(function StatusSelect({ 
   value, 
   onValueChange, 
-  placeholder = "Select status",
-  className = "w-full"
+  placeholder = "Select status...",
+  className = ""
 }: StatusSelectProps) {
   const [isAddingCustom, setIsAddingCustom] = useState(false)
   const [customValue, setCustomValue] = useState('')
@@ -178,4 +179,4 @@ export function StatusSelect({
       )}
     </div>
   )
-} 
+}) 

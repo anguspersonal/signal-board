@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { StartupCard } from '@/components/startup/StartupCard'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,13 +11,15 @@ import { Search, Filter, TrendingUp, Users, Heart, MessageCircle, Bookmark } fro
 import { StartupWithRatings } from '@/types/startup'
 import { ActivityItem } from '@/types/activity'
 
-export function FeedClient({ 
-  activities: serverActivities, 
-  trendingStartups: serverTrendingStartups 
-}: {
+interface FeedClientProps {
   activities: ActivityItem[]
   trendingStartups: StartupWithRatings[]
-}) {
+}
+
+export const FeedClient = memo(function FeedClient({ 
+  activities: serverActivities, 
+  trendingStartups: serverTrendingStartups 
+}: FeedClientProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('all')
 
@@ -267,4 +269,4 @@ export function FeedClient({
       </Tabs>
     </div>
   )
-} 
+}) 

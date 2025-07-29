@@ -39,7 +39,9 @@ export default function RootLayout({
                   ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
                   : theme;
                 document.documentElement.classList.toggle('dark', resolvedTheme === 'dark');
-              } catch (e) {}
+              } catch (e) {
+                // Ignore localStorage errors in SSR environments
+              }
             `,
           }}
         />

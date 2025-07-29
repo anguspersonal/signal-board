@@ -17,6 +17,11 @@ export type ChartConfig = {
   )
 }
 
+interface ChartStyleProps {
+  id: string
+  config: ChartConfig
+}
+
 type ChartContextType = { config: ChartConfig }
 const ChartContext = React.createContext<ChartContextType | null>(null)
 
@@ -75,7 +80,7 @@ ChartContainer.displayName = 'ChartContainer'
 /* ----------------------------------------------------------------------------
  * ChartStyle: Inject theme-based CSS variables
  * -------------------------------------------------------------------------- */
-export function ChartStyle({ id, config }: { id: string; config: ChartConfig }) {
+export function ChartStyle({ id, config }: ChartStyleProps) {
   const themedColors = Object.entries(config).filter(([, c]) => c.theme || c.color)
   if (!themedColors.length) return null
 
@@ -101,29 +106,35 @@ export function ChartStyle({ id, config }: { id: string; config: ChartConfig }) 
  * -------------------------------------------------------------------------- */
 export const ChartTooltip = Recharts.Tooltip
 
+// Define proper interfaces for chart payload items
+interface ChartPayloadItem {
+  dataKey?: string
+  name?: string
+  value?: number
+  payload?: Record<string, string | number>
+  color?: string
+  fill?: string
+}
+
+interface ChartTooltipContentProps extends React.ComponentProps<'div'> {
+  active?: boolean
+  payload?: ChartPayloadItem[]
+  label?: string
+  className?: string
+  hideLabel?: boolean
+  hideIndicator?: boolean
+  indicator?: 'line' | 'dot' | 'dashed'
+  formatter?: (value: number, name: string, props: ChartPayloadItem, index: number, payload: Record<string, string | number>) => React.ReactNode
+  labelFormatter?: (value: string | React.ReactNode, payload: ChartPayloadItem[]) => React.ReactNode
+  labelClassName?: string
+  color?: string
+  nameKey?: string
+  labelKey?: string
+}
+
 export const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & {
-    active?: boolean
-    payload?: Array<{
-      dataKey?: string
-      name?: string
-      value?: number
-      payload?: Record<string, unknown>
-      color?: string
-    }>
-    label?: string
-    className?: string
-    hideLabel?: boolean
-    hideIndicator?: boolean
-    indicator?: 'line' | 'dot' | 'dashed'
-    formatter?: (value: number, name: string, props: unknown, index: number, payload: unknown) => React.ReactNode
-    labelFormatter?: (value: string | React.ReactNode, payload: unknown) => React.ReactNode
-    labelClassName?: string
-    color?: string
-    nameKey?: string
-    labelKey?: string
-  }
+  ChartTooltipContentProps
 >((props, ref) => {
   const {
     active,
@@ -189,7 +200,7 @@ export const ChartTooltipContent = React.forwardRef<
               )}
             >
               {formatter && item.value !== undefined && item.name ? (
-                formatter(item.value, item.name, item, i, item.payload)
+                formatter(item.value, item.name, item, i, item.payload || {})
               ) : (
                 <>
                   {itemConfig?.icon && !hideIndicator ? (
@@ -240,18 +251,22 @@ ChartTooltipContent.displayName = 'ChartTooltipContent'
  * -------------------------------------------------------------------------- */
 export const ChartLegend = Recharts.Legend
 
+interface ChartLegendPayloadItem {
+  dataKey?: string
+  value?: string
+  color?: string
+}
+
+interface ChartLegendContentProps extends React.ComponentProps<'div'> {
+  payload?: ChartLegendPayloadItem[]
+  verticalAlign?: 'top' | 'bottom'
+  hideIcon?: boolean
+  nameKey?: string
+}
+
 export const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & {
-    payload?: Array<{
-      dataKey?: string
-      value?: string
-      color?: string
-    }>
-    verticalAlign?: 'top' | 'bottom'
-    hideIcon?: boolean
-    nameKey?: string
-  }
+  ChartLegendContentProps
 >(({ className, payload, verticalAlign = 'bottom', hideIcon = false, nameKey }, ref) => {
   const { config } = useChartContext()
   if (!payload?.length) return null
@@ -267,7 +282,7 @@ export const ChartLegendContent = React.forwardRef<
     >
       {payload.map((item) => {
         const key = nameKey || item.dataKey || 'value'
-        const itemConfig = getPayloadConfig(config, item, key)
+        const itemConfig = getPayloadConfig(config, item as ChartPayloadItem, key)
         return (
           <div key={item.value} className="flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground">
             {itemConfig?.icon && !hideIcon ? (
@@ -287,9 +302,9 @@ ChartLegendContent.displayName = 'ChartLegendContent'
 /* ----------------------------------------------------------------------------
  * Helpers
  * -------------------------------------------------------------------------- */
-function getPayloadConfig(config: ChartConfig, item: Record<string, unknown>, key: string) {
-  const safePayload = (item?.payload as Record<string, unknown>) || {}
-  const fallbackKey = typeof item?.[key] === 'string' ? item[key] as string : safePayload[key] as string
+function getPayloadConfig(config: ChartConfig, item: ChartPayloadItem, key: string) {
+  const safePayload = (item?.payload as Record<string, string | number>) || {}
+  const fallbackKey = typeof item?.[key as keyof ChartPayloadItem] === 'string' ? item[key as keyof ChartPayloadItem] as string : safePayload[key] as string
   return config[fallbackKey] || config[key]
 }
 

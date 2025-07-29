@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { StartupCard } from './StartupCard'
 import { StartupWithRatings } from '@/types/startup'
 import { cn } from '@/lib/utils'
@@ -11,7 +12,7 @@ interface StartupGridProps {
   className?: string
 }
 
-export function StartupGrid({ 
+export const StartupGrid = memo(function StartupGrid({ 
   startups, 
   showOwner = false, 
   onSelectStartup,
@@ -46,4 +47,4 @@ export function StartupGrid({
       ))}
     </div>
   )
-} 
+}) 

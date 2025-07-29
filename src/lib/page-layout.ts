@@ -58,7 +58,7 @@ export async function getPageLayout(
  * Helper function to get authenticated user and profile
  * @returns Object containing user and userProfile
  */
-export async function getAuthenticatedUser() {
+export async function getAuthenticatedUser(): Promise<{ user: User; userProfile: UserProfile | null }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   

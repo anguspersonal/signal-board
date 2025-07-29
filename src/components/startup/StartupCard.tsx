@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import Image from 'next/image'
@@ -38,7 +38,7 @@ interface StartupCardProps {
   onClick?: (id: string) => void
 }
 
-export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: StartupCardProps) {
+export const StartupCard = memo(function StartupCard({ startup, showOwner = false, onUpdate, onClick }: StartupCardProps) {
   const router = useRouter()
   const [user, setUser] = useState<{ id: string } | null>(getMockUser())
   const [loading, setLoading] = useState(false)
@@ -131,7 +131,8 @@ export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: S
                 width={48}
                 height={48}
                 className="h-10 object-cover rounded-lg sm:h-12 sm:w-12 w-10"
-                unoptimized
+                sizes="48px"
+                priority={false}
               />
             ) : (
               <div className="bg-gradient-to-br flex from-blue-500 h-10 items-center justify-center rounded-lg sm:h-12 sm:w-12 to-purple-600 w-10">
@@ -296,4 +297,4 @@ export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: S
       </CardContent>
     </Card>
   )
-}
+})

@@ -26,7 +26,7 @@ function AuthCallbackContent() {
         if (user) {
           logger.debug('User already authenticated, redirecting to dashboard')
           // Clean up the URL by removing query string before redirect
-          window.history.replaceState({}, '', '/dashboard')
+          window.history.replaceState(null, '', '/dashboard')
           router.replace('/dashboard')
           return
         }
@@ -36,7 +36,7 @@ function AuthCallbackContent() {
         if (!code) {
           logger.debug('No authentication code found, redirecting to home')
           // Clean up the URL by removing query string before redirect
-          window.history.replaceState({}, '', '/')
+          window.history.replaceState(null, '', '/')
           router.replace('/')
           return
         }
@@ -71,7 +71,7 @@ function AuthCallbackContent() {
           }
           
           // Clean up the URL by removing query string before redirect
-          window.history.replaceState({}, '', '/dashboard')
+          window.history.replaceState(null, '', '/dashboard')
           // Redirect to dashboard page after successful authentication
           router.replace('/dashboard')
         } else {

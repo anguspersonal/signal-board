@@ -3,12 +3,12 @@ import { getPageLayout, getAuthenticatedUser } from '@/lib/page-layout'
 import { createClient } from '@/lib/supabase'
 import { StartupEditForm } from '@/components/startup/StartupEditForm'
 
-type PageProps = {
-  params?: Promise<{ id: string }>
+interface PageProps {
+  params: Promise<{ id: string }>
 }
 
 export default async function EditStartupPage({ params }: PageProps) {
-  const { id } = await params || { id: '' }
+  const { id } = await params
 
   // Get authenticated user and profile
   const { user, userProfile } = await getAuthenticatedUser()

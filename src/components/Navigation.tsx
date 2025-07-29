@@ -22,14 +22,14 @@ import {
 import { ThemeToggle } from './theme-toggle'
 import { UserProfile } from '@/lib/profile'
 import { logger } from '@/lib/logger'
+import { memo } from 'react'
 
-export function Navigation({ 
-  user, 
-  userProfile 
-}: {
+interface NavigationProps {
   user: { id: string; email?: string } | null
   userProfile: UserProfile | null
-}) {
+}
+
+export const Navigation = memo(function Navigation({ user, userProfile }: NavigationProps) {
   const router = useRouter()
   const [notifications, setNotifications] = useState(3) // Mock notification count
   const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -147,4 +147,4 @@ export function Navigation({
       </div>
     </nav>
   )
-} 
+}) 

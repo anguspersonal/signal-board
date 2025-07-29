@@ -22,7 +22,6 @@ import {
   AlertTriangle
 } from 'lucide-react'
 
-
 export function SettingsClient() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)

@@ -1,8 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { useRouter } from 'next/navigation'
-
 import { User } from '@supabase/supabase-js'
 import { updateUserProfile, ensureUserProfile, getDisplayName, UserProfile } from '@/lib/profile'
 import { Button } from '@/components/ui/button'
@@ -24,13 +23,12 @@ import {
   AlertCircle
 } from 'lucide-react'
 
-export function ProfileClient({ 
-  user, 
-  userProfile 
-}: {
+interface ProfileClientProps {
   user: { id: string; email?: string }
   userProfile: UserProfile | null
-}) {
+}
+
+export const ProfileClient = memo(function ProfileClient({ user, userProfile }: ProfileClientProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -436,4 +434,4 @@ export function ProfileClient({
       </Tabs>
     </div>
   )
-} 
+}) 

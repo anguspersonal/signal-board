@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, ReactNode, useState } from 'react'
 
 interface DrawerContextType {
   selectedStartupId: string | null
@@ -9,7 +9,11 @@ interface DrawerContextType {
 
 const DrawerContext = createContext<DrawerContextType | undefined>(undefined)
 
-export function DrawerProvider({ children }: { children: ReactNode }) {
+interface DrawerProviderProps {
+  children: ReactNode
+}
+
+export function DrawerProvider({ children }: DrawerProviderProps) {
   const [selectedStartupId, setSelectedStartupId] = useState<string | null>(null)
 
   return (

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -16,7 +16,7 @@ interface StartupRatingFormProps {
   onRatingSubmitted?: () => void
 }
 
-export function StartupRatingForm({ startupId, userId, onRatingSubmitted }: StartupRatingFormProps) {
+export const StartupRatingForm = memo(function StartupRatingForm({ startupId, userId, onRatingSubmitted }: StartupRatingFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [ratings, setRatings] = useState<{
@@ -220,7 +220,7 @@ export function StartupRatingForm({ startupId, userId, onRatingSubmitted }: Star
       </CardContent>
     </Card>
   )
-}
+})
 
 function getDimensionDescription(dimension: RatingDimension): string {
   const descriptions = {

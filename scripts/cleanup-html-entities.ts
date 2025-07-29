@@ -7,12 +7,11 @@
  * with their proper character equivalents, since JSX handles these natively.
  */
 
-const fs = require('fs');
-const path = require('path');
-const glob = require('glob');
+import fs from 'fs';
+import { glob } from 'glob';
 
 // HTML entities that are unnecessary in JSX/TSX
-const UNNECESSARY_ENTITIES = {
+const UNNECESSARY_ENTITIES: Record<string, string> = {
   '&apos;': "'",
   '&quot;': '"',
   '&amp;': '&',
@@ -27,7 +26,7 @@ const UNNECESSARY_ENTITIES = {
   '&ndash;': '–'
 };
 
-function cleanupFile(filePath) {
+function cleanupFile(filePath: string): boolean {
   try {
     const content = fs.readFileSync(filePath, 'utf8');
     let modified = false;
@@ -48,12 +47,12 @@ function cleanupFile(filePath) {
     }
     return false;
   } catch (error) {
-    console.error(`Error processing ${filePath}:`, error.message);
+    console.error(`Error processing ${filePath}:`, error instanceof Error ? error.message : String(error));
     return false;
   }
 }
 
-function main() {
+function main(): void {
   const args = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
   const verbose = args.includes('--verbose');
@@ -113,7 +112,7 @@ function main() {
         }
       }
     } catch (error) {
-      console.error(`Error reading ${file}:`, error.message);
+      console.error(`Error reading ${file}:`, error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -137,8 +136,8 @@ function main() {
   console.log('   - Consider adding ESLint rules to prevent this in the future');
 }
 
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }
 
-module.exports = { cleanupFile, UNNECESSARY_ENTITIES }; 
+export { cleanupFile, UNNECESSARY_ENTITIES };

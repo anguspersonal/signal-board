@@ -2,6 +2,7 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Search, Play, Pause, XCircle, CheckCircle, Package, Plus } from 'lucide-react'
+import { memo } from 'react'
 
 const PREDEFINED_STATUSES = [
   { 
@@ -60,7 +61,7 @@ interface StatusBadgeProps {
   className?: string
 }
 
-export function StatusBadge({ status, showIcon = true, className = "" }: StatusBadgeProps) {
+export const StatusBadge = memo(function StatusBadge({ status, showIcon = true, className = "" }: StatusBadgeProps) {
   if (!status) return null
 
   // Find the predefined status or create a default one
@@ -104,4 +105,4 @@ export function StatusBadge({ status, showIcon = true, className = "" }: StatusB
       {statusConfig.label}
     </Badge>
   )
-}
+})

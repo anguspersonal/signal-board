@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { Button } from '@/components/ui/button'
@@ -10,7 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import UploadLogo from '@/components/ui/UploadLogo'
 import { StatusSelect } from '@/components/ui/StatusSelect'
 
-export function StartupForm({ userId }: { userId: string }) {
+interface StartupFormProps {
+  userId: string
+}
+
+export const StartupForm = memo(function StartupForm({ userId }: StartupFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -392,4 +396,4 @@ export function StartupForm({ userId }: { userId: string }) {
       </div>
     </form>
   )
-}
+})
