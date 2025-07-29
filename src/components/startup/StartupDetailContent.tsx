@@ -10,6 +10,7 @@ import Image from 'next/image'
 import { toggleStartupEngagementClient } from '@/lib/startups-client'
 import { StartupRatingForm } from '@/components/StartupRatingForm'
 import ReactMarkdown from 'react-markdown'
+import { StatusBadge } from '@/components/ui/StatusBadge'
 
 interface StartupDetailContentProps {
   startup: StartupWithRatings
@@ -247,7 +248,7 @@ export function StartupDetailContent({ startup, canViewSensitiveData }: StartupD
             {startup.status && (
               <div>
                 <h4 className="font-medium text-slate-900 mb-2">Current Status</h4>
-                <p className="text-slate-700">{startup.status}</p>
+                <StatusBadge status={startup.status} />
               </div>
             )}
             {startup.asks_and_opportunities && (
@@ -267,7 +268,7 @@ export function StartupDetailContent({ startup, canViewSensitiveData }: StartupD
             <CardTitle>Your Involvement</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-slate-700">{startup.status}</p>
+            <StatusBadge status={startup.status} />
           </CardContent>
         </Card>
       )}

@@ -33,13 +33,14 @@ export function StartupsClient({ variant, startups, showOwner = true }: Startups
 
   // Helper function to get sort display text
   const getSortDisplayText = () => {
+    const activeFirst = "Active first, then "
     switch (sortBy) {
       case 'name':
-        return sortOrder === 'asc' ? 'Name A-Z' : 'Name Z-A'
+        return sortOrder === 'asc' ? `${activeFirst}Name A-Z` : `${activeFirst}Name Z-A`
       case 'rating':
-        return sortOrder === 'desc' ? 'Highest Rated' : 'Lowest Rated'
+        return sortOrder === 'desc' ? `${activeFirst}Highest Rated` : `${activeFirst}Lowest Rated`
       case 'created_at':
-        return sortOrder === 'desc' ? 'Newest First' : 'Oldest First'
+        return sortOrder === 'desc' ? `${activeFirst}Newest First` : `${activeFirst}Oldest First`
       default:
         return 'Sort'
     }
@@ -63,6 +64,14 @@ export function StartupsClient({ variant, startups, showOwner = true }: Startups
 
   // Sort filtered startups
   const sortedStartups = [...filteredStartups].sort((a, b) => {
+    // First, prioritize "Active" status startups
+    const aIsActive = a.status === 'Active'
+    const bIsActive = b.status === 'Active'
+    
+    if (aIsActive && !bIsActive) return -1
+    if (!aIsActive && bIsActive) return 1
+    
+    // If both have the same active status, apply the selected sort criteria
     let aValue: string | number
     let bValue: string | number
 
@@ -225,7 +234,7 @@ export function StartupsClient({ variant, startups, showOwner = true }: Startups
                   className={sortBy === 'name' && sortOrder === 'asc' ? 'bg-accent' : ''}
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span>Name A-Z</span>
+                    <span>Active first, then Name A-Z</span>
                     {sortBy === 'name' && sortOrder === 'asc' && (
                       <span className="text-xs text-muted-foreground">✓</span>
                     )}
@@ -236,7 +245,7 @@ export function StartupsClient({ variant, startups, showOwner = true }: Startups
                   className={sortBy === 'name' && sortOrder === 'desc' ? 'bg-accent' : ''}
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span>Name Z-A</span>
+                    <span>Active first, then Name Z-A</span>
                     {sortBy === 'name' && sortOrder === 'desc' && (
                       <span className="text-xs text-muted-foreground">✓</span>
                     )}
@@ -247,7 +256,7 @@ export function StartupsClient({ variant, startups, showOwner = true }: Startups
                   className={sortBy === 'rating' && sortOrder === 'desc' ? 'bg-accent' : ''}
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span>Highest Rated</span>
+                    <span>Active first, then Highest Rated</span>
                     {sortBy === 'rating' && sortOrder === 'desc' && (
                       <span className="text-xs text-muted-foreground">✓</span>
                     )}
@@ -258,7 +267,7 @@ export function StartupsClient({ variant, startups, showOwner = true }: Startups
                   className={sortBy === 'rating' && sortOrder === 'asc' ? 'bg-accent' : ''}
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span>Lowest Rated</span>
+                    <span>Active first, then Lowest Rated</span>
                     {sortBy === 'rating' && sortOrder === 'asc' && (
                       <span className="text-xs text-muted-foreground">✓</span>
                     )}
@@ -269,7 +278,7 @@ export function StartupsClient({ variant, startups, showOwner = true }: Startups
                   className={sortBy === 'created_at' && sortOrder === 'desc' ? 'bg-accent' : ''}
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span>Newest First</span>
+                    <span>Active first, then Newest First</span>
                     {sortBy === 'created_at' && sortOrder === 'desc' && (
                       <span className="text-xs text-muted-foreground">✓</span>
                     )}
@@ -280,7 +289,7 @@ export function StartupsClient({ variant, startups, showOwner = true }: Startups
                   className={sortBy === 'created_at' && sortOrder === 'asc' ? 'bg-accent' : ''}
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span>Oldest First</span>
+                    <span>Active first, then Oldest First</span>
                     {sortBy === 'created_at' && sortOrder === 'asc' && (
                       <span className="text-xs text-muted-foreground">✓</span>
                     )}

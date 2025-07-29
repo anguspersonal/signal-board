@@ -42,7 +42,7 @@ export function StartupDetailDrawer({
 
   return (
     <div 
-      className="fixed right-0 top-0 h-screen w-full md:w-[480px] bg-white shadow-xl z-40 border-l border-gray-200 overflow-hidden"
+      className="fixed right-0 top-16 h-[calc(100vh-4rem)] w-full md:w-[480px] bg-white shadow-xl z-40 border-l border-gray-200 overflow-hidden"
       onClick={(e) => e.stopPropagation()}
       role="dialog"
       aria-modal="true"

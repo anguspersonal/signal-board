@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { StatusBadge } from '@/components/ui/StatusBadge'
 import { 
   MoreHorizontal, 
   Star, 
@@ -219,9 +220,7 @@ export function StartupCard({ startup, showOwner = false, onUpdate, onClick }: S
         {/* Status */}
         {startup.status && (
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-xs">
-              {startup.status}
-            </Badge>
+            <StatusBadge status={startup.status} />
           </div>
         )}
 
