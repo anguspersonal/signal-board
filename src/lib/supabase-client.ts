@@ -1,3 +1,7 @@
+// supabase-browser.ts
+// ✅ Use in client-side React components only. Uses createBrowserClient.
+// 🚫 Do not import this file into server logic or page.tsx
+
 import { createBrowserClient } from '@supabase/ssr'
 import { logger } from './logger'
 

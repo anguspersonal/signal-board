@@ -1,3 +1,7 @@
+// startups-client.ts
+// ✅ Use only in client-side ('use client') components
+// 🚫 Do not import into page.tsx or server logic
+
 import { createBrowserClient } from '@supabase/ssr'
 
 export async function toggleStartupEngagementClient(

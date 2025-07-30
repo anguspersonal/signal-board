@@ -1,3 +1,7 @@
+// supabase-server.ts
+// ✅ Use in server-side logic only. Uses createServerClient.
+// 🚫 Do not import this file into 'use client' components!
+
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { logger } from './logger'

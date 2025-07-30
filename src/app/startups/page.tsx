@@ -1,5 +1,5 @@
 import { getPageLayout, getAuthenticatedUser } from '@/lib/page-layout'
-import { getAllVisibleStartupsWithRatings } from '@/lib/startups'
+import { getFilteredStartups } from '@/lib/startups'
 import { ExploreWrapper } from '@/components/startup/ExploreWrapper'
 
 export default async function StartupsPage() {
@@ -7,7 +7,9 @@ export default async function StartupsPage() {
   const { user, userProfile } = await getAuthenticatedUser()
 
   // Fetch all visible startups (public + user's own private startups)
-  const startups = await getAllVisibleStartupsWithRatings(user.id)
+  const startups = await getFilteredStartups(user.id, {
+    visibility: ['public', 'invite-only']
+  })
 
   return getPageLayout(
     user,

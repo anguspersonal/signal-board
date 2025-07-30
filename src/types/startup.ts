@@ -10,6 +10,18 @@ export const RATING_DIMENSIONS = {
 
 export type RatingDimension = keyof typeof RATING_DIMENSIONS
 
+// Filter options for startup queries
+export interface StartupFilterOptions {
+  visibility?: string[]        // e.g. ['public', 'invite-only']
+  tags?: string[]              // tag values (exact match)
+  status?: string[]            // optional future support
+  userOnly?: boolean           // restrict to startups where user_id = current user
+  minRating?: number           // minimum avg_rating
+  maxRating?: number           // optional
+  sortBy?: 'created_at' | 'avg_rating' | 'name'
+  sortOrder?: 'asc' | 'desc'
+}
+
 // Represents the raw database row from the `startups` table
 export interface StartupBase {
   id: string

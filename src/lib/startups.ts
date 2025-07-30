@@ -1,6 +1,6 @@
 import { createClient } from './supabase'
 import { toCreatorStartup, toRatedStartup } from '@/types/helpers'
-import { StartupBase, StartupWithCreator, StartupWithRatings } from '@/types/startup'
+import { StartupBase, StartupWithCreator, StartupWithRatings, StartupFilterOptions } from '@/types/startup'
 import { logger } from './logger'
 
 // Helper function to fetch average score for a startup
@@ -73,6 +73,75 @@ async function fetchDimensionRatings(startupId: string): Promise<{ [dimension: s
   })
 
   return dimensionRatings
+}
+
+// Shared helper function to enrich a startup with ratings and metadata
+async function enrichStartupWithRatingsAndMeta(
+  startup: StartupBase,
+  currentUserId: string
+): Promise<StartupWithRatings | null> {
+  // Fetch average score and dimension ratings
+  const averageScore = await fetchAverageScore(startup.id)
+  const dimensionRatings = await fetchDimensionRatings(startup.id)
+
+  // Fetch user ratings
+  const supabase = await createClient()
+  const { data: ratingsData } = await supabase
+    .from('startup_ratings')
+    .select('id, dimension, score, comment, user_id, visibility')
+    .eq('startup_id', startup.id)
+
+  const userRatings = ratingsData?.map(rating => ({
+    id: rating.id,
+    dimension: rating.dimension,
+    score: rating.score,
+    comment: rating.comment,
+    user_id: rating.user_id,
+    visibility: rating.visibility
+  })) || []
+
+  // Fetch creator info
+  const { data: userData } = await supabase
+    .from('users')
+    .select('name, email')
+    .eq('id', startup.user_id)
+    .single()
+
+  const users = userData ? { name: userData.name, email: userData.email } : undefined
+
+  // Check saved
+  const { data: savedData } = await supabase
+    .from('startup_engagements')
+    .select('id')
+    .eq('startup_id', startup.id)
+    .eq('user_id', currentUserId)
+    .eq('type', 'saved')
+    .single()
+  const saved = !!savedData
+
+  // Check interested
+  const { data: interestedData } = await supabase
+    .from('startup_engagements')
+    .select('id')
+    .eq('startup_id', startup.id)
+    .eq('user_id', currentUserId)
+    .eq('type', 'interest')
+    .single()
+  const interested = !!interestedData
+
+  const isOwnStartup = startup.user_id === currentUserId
+  const creatorName = isOwnStartup ? 'You' : users?.name || 'Unknown'
+
+  return toRatedStartup(
+    startup,
+    averageScore,
+    creatorName,
+    userRatings,
+    dimensionRatings,
+    saved,
+    interested,
+    users
+  )
 }
 
 export async function getUserStartups(userId: string): Promise<StartupWithCreator[]> {
@@ -148,77 +217,22 @@ export async function getUserStartupsWithRatings(userId: string): Promise<Startu
     (data as StartupBase[]).map(async (startup) => {
       // logger.debug('Fetching data for startup', { index: index + 1, startupName: startup.name })
       
-      // Fetch average score and dimension ratings
-      const averageScore = await fetchAverageScore(startup.id)
-      const dimensionRatings = await fetchDimensionRatings(startup.id)
+      const enrichedStartup = await enrichStartupWithRatingsAndMeta(startup, userId)
       
-      // Fetch user ratings with comments (RLS will filter by visibility)
-      const { data: ratingsData } = await supabase
-        .from('startup_ratings')
-        .select(`
-          id,
-          dimension,
-          score,
-          comment,
-          user_id,
-          visibility
-        `)
-        .eq('startup_id', startup.id)
-      
-      const userRatings = ratingsData?.map(rating => ({
-        id: rating.id,
-        dimension: rating.dimension,
-        score: rating.score,
-        comment: rating.comment,
-        user_id: rating.user_id,
-        visibility: rating.visibility
-      })) || []
-      
-      // Fetch user data (creator info)
-      const { data: userData } = await supabase
-        .from('users')
-        .select('name, email')
-        .eq('id', startup.user_id)
-        .single()
-      
-      const users = userData ? { name: userData.name, email: userData.email } : undefined
-      
-      // Check if current user has saved this startup
-      const { data: savedData } = await supabase
-        .from('startup_engagements')
-        .select('id')
-        .eq('startup_id', startup.id)
-        .eq('user_id', userId)
-        .eq('type', 'saved')
-        .single()
-      
-      const saved = !!savedData
-
-      // Check if current user has expressed interest in this startup
-      const { data: interestedData } = await supabase
-        .from('startup_engagements')
-        .select('id')
-        .eq('startup_id', startup.id)
-        .eq('user_id', userId)
-        .eq('type', 'interest')
-        .single()
-      
-      const interested = !!interestedData
-
       // logger.debug('Startup data processed', { 
       //   startupName: startup.name, 
-      //   averageScore, 
-      //   ratingsCount: userRatings.length, 
-      //   saved,
-      //   interested
+      //   averageScore: enrichedStartup?.avg_rating, 
+      //   ratingsCount: enrichedStartup?.user_ratings?.length, 
+      //   saved: enrichedStartup?.saved,
+      //   interested: enrichedStartup?.interested
       // })
 
-      return toRatedStartup(startup, averageScore, 'You', userRatings, dimensionRatings, saved, interested, users)
+      return enrichedStartup
     })
   )
 
   // logger.debug('Processed user startups with ratings', { userId, count: startupsWithRatings.length })
-  return startupsWithRatings
+  return startupsWithRatings.filter(Boolean) as StartupWithRatings[]
 }
 
 export async function getStartupById(startupId: string): Promise<StartupBase | null> {
@@ -300,73 +314,18 @@ export async function getStartupWithFullDetails(startupId: string, currentUserId
     return null
   }
 
-  // Fetch average score and dimension ratings
-  const averageScore = await fetchAverageScore(startupId)
-  const dimensionRatings = await fetchDimensionRatings(startupId)
-  
-  // Fetch all ratings with comments
-  const { data: ratingsData } = await supabase
-    .from('startup_ratings')
-    .select(`
-      id,
-      dimension,
-      score,
-      comment,
-      user_id,
-      visibility
-    `)
-    .eq('startup_id', startupId)
-  
-  const userRatings = ratingsData?.map(rating => ({
-    id: rating.id,
-    dimension: rating.dimension,
-    score: rating.score,
-    comment: rating.comment,
-    user_id: rating.user_id,
-    visibility: rating.visibility
-  })) || []
-  
-  // Fetch user data (creator info)
-  const { data: userData } = await supabase
-    .from('users')
-    .select('name, email')
-    .eq('id', startupData.user_id)
-    .single()
-  
-  const users = userData ? { name: userData.name, email: userData.email } : undefined
-  
-  // Check if current user has saved this startup
-  const { data: savedData } = await supabase
-    .from('startup_engagements')
-    .select('id')
-    .eq('startup_id', startupId)
-    .eq('user_id', currentUserId)
-    .eq('type', 'saved')
-    .single()
-  
-  const saved = !!savedData
-
-  // Check if current user has expressed interest in this startup
-  const { data: interestedData } = await supabase
-    .from('startup_engagements')
-    .select('id')
-    .eq('startup_id', startupId)
-    .eq('user_id', currentUserId)
-    .eq('type', 'interest')
-    .single()
-  
-  const interested = !!interestedData
+  const enrichedStartup = await enrichStartupWithRatingsAndMeta(startupData, currentUserId)
 
   logger.debug('Startup with full details processed', { 
     startupId, 
     startupName: startupData.name, 
-    averageScore, 
-    ratingsCount: userRatings.length, 
-    saved,
-    interested
+    averageScore: enrichedStartup?.avg_rating, 
+    ratingsCount: enrichedStartup?.user_ratings?.length, 
+    saved: enrichedStartup?.saved,
+    interested: enrichedStartup?.interested
   })
 
-  return toRatedStartup(startupData, averageScore, 'You', userRatings, dimensionRatings, saved, interested, users)
+  return enrichedStartup
 } 
 
 export async function toggleStartupEngagement(
@@ -420,12 +379,21 @@ export async function toggleStartupEngagement(
   }
 }
 
-export async function getAllVisibleStartupsWithRatings(currentUserId: string): Promise<StartupWithRatings[]> {
-  logger.debug('Fetching all visible startups with ratings', { currentUserId })
+/**
+ * Get filtered startups with ratings based on flexible filter options
+ * @param userId - Current user ID for access control
+ * @param filters - Filter options for the query
+ * @returns Promise<StartupWithRatings[]>
+ */
+export async function getFilteredStartups(
+  userId: string, 
+  filters: StartupFilterOptions = {}
+): Promise<StartupWithRatings[]> {
+  logger.debug('Fetching filtered startups', { userId, filters })
   const supabase = await createClient()
   
-  // Get startups that are public, owned by current user, OR where user has access
-  const { data, error } = await supabase
+  // Build the base query
+  let query = supabase
     .from('startups')
     .select(`
       id,
@@ -440,27 +408,57 @@ export async function getAllVisibleStartupsWithRatings(currentUserId: string): P
       status,
       created_at
     `)
-    .or(`visibility.eq.public,user_id.eq.${currentUserId}`)
-    .order('created_at', { ascending: false })
+
+  // Apply visibility filter
+  if (filters.visibility && filters.visibility.length > 0) {
+    query = query.in('visibility', filters.visibility)
+  }
+
+  // Apply user-only filter
+  if (filters.userOnly) {
+    query = query.eq('user_id', userId)
+  } else {
+    // Default behavior: include public startups and user's own startups
+    query = query.or(`visibility.eq.public,user_id.eq.${userId}`)
+  }
+
+  // Apply tags filter
+  if (filters.tags && filters.tags.length > 0) {
+    // Filter startups that contain any of the specified tags
+    query = query.overlaps('tags', filters.tags)
+  }
+
+  // Apply status filter
+  if (filters.status && filters.status.length > 0) {
+    query = query.in('status', filters.status)
+  }
+
+  // Apply sorting
+  const sortBy = filters.sortBy || 'created_at'
+  const sortOrder = filters.sortOrder || 'desc'
+  query = query.order(sortBy, { ascending: sortOrder === 'asc' })
+
+  const { data, error } = await query
 
   if (error) {
-    logger.error('Error fetching visible startups', { error })
+    logger.error('Error fetching filtered startups', { userId, filters, error })
     return []
   }
 
-  // Get startups where user has explicit access
-  const { data: accessData, error: accessError } = await supabase
-    .from('startup_access')
-    .select('startup_id')
-    .eq('user_id', currentUserId)
+  // Get startups where user has explicit access (for non-public startups)
+  let accessibleStartupIds: string[] = []
+  if (!filters.userOnly) {
+    const { data: accessData, error: accessError } = await supabase
+      .from('startup_access')
+      .select('startup_id')
+      .eq('user_id', userId)
 
-  if (accessError) {
-    logger.error('Error fetching startup access', { error: accessError })
+    if (!accessError && accessData) {
+      accessibleStartupIds = accessData.map(a => a.startup_id)
+    }
   }
 
-  const accessibleStartupIds = accessData?.map(a => a.startup_id) || []
-  
-  // Get additional startups where user has access
+  // Get additional accessible startups
   let additionalStartups: StartupBase[] = []
   if (accessibleStartupIds.length > 0) {
     const { data: additionalData, error: additionalError } = await supabase
@@ -479,13 +477,11 @@ export async function getAllVisibleStartupsWithRatings(currentUserId: string): P
         created_at
       `)
       .in('id', accessibleStartupIds)
-      .not('user_id', 'eq', currentUserId) // Exclude own startups (already included above)
-      .not('visibility', 'eq', 'public') // Exclude public startups (already included above)
+      .not('user_id', 'eq', userId)
+      .not('visibility', 'eq', 'public')
 
-    if (additionalError) {
-      logger.error('Error fetching additional accessible startups', { error: additionalError })
-    } else {
-      additionalStartups = additionalData || []
+    if (!additionalError && additionalData) {
+      additionalStartups = additionalData
     }
   }
 
@@ -495,82 +491,55 @@ export async function getAllVisibleStartupsWithRatings(currentUserId: string): P
     index === self.findIndex(s => s.id === startup.id)
   )
 
-  logger.debug('Found visible startups', { 
+  logger.debug('Found filtered startups', { 
     count: uniqueStartups.length,
-    publicOwned: data?.length || 0,
-    accessible: additionalStartups.length
+    filters
   })
 
   // Get ratings and additional data for each startup
   const startupsWithRatings = await Promise.all(
     uniqueStartups.map(async (startup) => {
-      // Fetch average score and dimension ratings
-      const averageScore = await fetchAverageScore(startup.id)
-      const dimensionRatings = await fetchDimensionRatings(startup.id)
+      const enrichedStartup = await enrichStartupWithRatingsAndMeta(startup, userId)
       
-      // Fetch user ratings with comments (RLS will filter by visibility)
-      const { data: ratingsData } = await supabase
-        .from('startup_ratings')
-        .select(`
-          id,
-          dimension,
-          score,
-          comment,
-          user_id,
-          visibility
-        `)
-        .eq('startup_id', startup.id)
+      // Apply rating filter if specified
+      if (enrichedStartup && filters.minRating && (enrichedStartup.avg_rating || 0) < filters.minRating) {
+        return null
+      }
+      if (enrichedStartup && filters.maxRating && (enrichedStartup.avg_rating || 0) > filters.maxRating) {
+        return null
+      }
       
-      const userRatings = ratingsData?.map(rating => ({
-        id: rating.id,
-        dimension: rating.dimension,
-        score: rating.score,
-        comment: rating.comment,
-        user_id: rating.user_id,
-        visibility: rating.visibility
-      })) || []
-      
-      // Fetch user data (creator info)
-      const { data: userData } = await supabase
-        .from('users')
-        .select('name, email')
-        .eq('id', startup.user_id)
-        .single()
-      
-      const users = userData ? { name: userData.name, email: userData.email } : undefined
-      
-      // Check if current user has saved this startup
-      const { data: savedData } = await supabase
-        .from('startup_engagements')
-        .select('id')
-        .eq('startup_id', startup.id)
-        .eq('user_id', currentUserId)
-        .eq('type', 'saved')
-        .single()
-      
-      const saved = !!savedData
-
-      // Check if current user has expressed interest in this startup
-      const { data: interestedData } = await supabase
-        .from('startup_engagements')
-        .select('id')
-        .eq('startup_id', startup.id)
-        .eq('user_id', currentUserId)
-        .eq('type', 'interest')
-        .single()
-      
-      const interested = !!interestedData
-
-      // Determine if this is the current user's startup
-      const isOwnStartup = startup.user_id === currentUserId
-      const creatorName = isOwnStartup ? 'You' : users?.name || 'Unknown'
-
-      return toRatedStartup(startup, averageScore, creatorName, userRatings, dimensionRatings, saved, interested, users)
+      return enrichedStartup
     })
   )
 
-  logger.debug('Processed visible startups with ratings', { count: startupsWithRatings.length })
-  return startupsWithRatings
+  // Filter out null results (from rating filters) and sort by rating if needed
+  const filteredResults = startupsWithRatings.filter(Boolean) as StartupWithRatings[]
+  
+  if (filters.sortBy === 'avg_rating') {
+    filteredResults.sort((a, b) => {
+      const aRating = a.avg_rating || 0
+      const bRating = b.avg_rating || 0
+      return filters.sortOrder === 'asc' ? aRating - bRating : bRating - aRating
+    })
+  }
+
+  logger.debug('Processed filtered startups with ratings', { 
+    count: filteredResults.length,
+    filters
+  })
+  
+  return filteredResults
+}
+
+/**
+ * @deprecated Use getFilteredStartups() instead for more flexible filtering
+ */
+export async function getAllVisibleStartupsWithRatings(currentUserId: string): Promise<StartupWithRatings[]> {
+  logger.warn('getAllVisibleStartupsWithRatings is deprecated. Use getFilteredStartups() instead.')
+  return getFilteredStartups(currentUserId, {
+    visibility: ['public', 'invite-only']
+  })
 }
 
 export async function getUserEngagements(userId: string): Promise<{
@@ -707,65 +676,19 @@ export async function getUserSavedStartupsWithRatings(userId: string): Promise<S
   // Get ratings and additional data for each saved startup
   const savedStartupsWithRatings = await Promise.all(
     (startupsData as StartupBase[]).map(async (startup) => {
-      // Fetch average score and dimension ratings
-      const averageScore = await fetchAverageScore(startup.id)
-      const dimensionRatings = await fetchDimensionRatings(startup.id)
+      const enrichedStartup = await enrichStartupWithRatingsAndMeta(startup, userId)
       
-      // Fetch user ratings with comments (RLS will filter by visibility)
-      const { data: ratingsData } = await supabase
-        .from('startup_ratings')
-        .select(`
-          id,
-          dimension,
-          score,
-          comment,
-          user_id,
-          visibility
-        `)
-        .eq('startup_id', startup.id)
+      // Override saved status since we know these are all saved startups
+      if (enrichedStartup) {
+        enrichedStartup.saved = true
+      }
       
-      const userRatings = ratingsData?.map(rating => ({
-        id: rating.id,
-        dimension: rating.dimension,
-        score: rating.score,
-        comment: rating.comment,
-        user_id: rating.user_id,
-        visibility: rating.visibility
-      })) || []
-      
-      // Fetch user data (creator info)
-      const { data: userData } = await supabase
-        .from('users')
-        .select('name, email')
-        .eq('id', startup.user_id)
-        .single()
-      
-      const users = userData ? { name: userData.name, email: userData.email } : undefined
-      
-      // Check if current user has saved this startup (should be true for all)
-      const saved = true
-
-      // Check if current user has expressed interest in this startup
-      const { data: interestedData } = await supabase
-        .from('startup_engagements')
-        .select('id')
-        .eq('startup_id', startup.id)
-        .eq('user_id', userId)
-        .eq('type', 'interest')
-        .single()
-      
-      const interested = !!interestedData
-
-      // Determine if this is the current user's startup
-      const isOwnStartup = startup.user_id === userId
-      const creatorName = isOwnStartup ? 'You' : users?.name || 'Unknown'
-
-      return toRatedStartup(startup, averageScore, creatorName, userRatings, dimensionRatings, saved, interested, users)
+      return enrichedStartup
     })
   )
 
   logger.debug('Processed saved startups with ratings', { userId, count: savedStartupsWithRatings.length })
-  return savedStartupsWithRatings
+  return savedStartupsWithRatings.filter(Boolean) as StartupWithRatings[]
 }
 
  
