@@ -24,6 +24,7 @@ export interface StartupBase {
   status?: string
   asks_and_opportunities?: string
   website_url?: string
+  your_involvement?: string
 }
 
 // Adds the startup creator's display name (joined from users)

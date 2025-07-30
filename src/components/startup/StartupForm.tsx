@@ -28,7 +28,8 @@ export const StartupForm = memo(function StartupForm({ userId }: StartupFormProp
     website_url: '',
     visibility: 'public' as 'public' | 'invite-only' | 'private',
     status: '',
-    asks_and_opportunities: ''
+    asks_and_opportunities: '',
+    your_involvement: ''
   })
 
   // Cleanup function to delete uploaded files if form is abandoned
@@ -117,7 +118,8 @@ export const StartupForm = memo(function StartupForm({ userId }: StartupFormProp
           website_url: formData.website_url.trim() || null,
           visibility: formData.visibility,
           status: formData.status.trim() || null,
-          asks_and_opportunities: formData.asks_and_opportunities.trim() || null
+          asks_and_opportunities: formData.asks_and_opportunities.trim() || null,
+          your_involvement: formData.your_involvement.trim() || null
         })
         .select()
         .single()
@@ -333,6 +335,25 @@ export const StartupForm = memo(function StartupForm({ userId }: StartupFormProp
         />
         <p id="asks-help" className="text-sm text-gray-500 mt-1">
           Describe what you're seeking from the network
+        </p>
+      </div>
+
+      {/* Your Involvement Field */}
+      <div>
+        <label htmlFor="your_involvement" className="block text-sm font-medium text-gray-700 mb-2">
+          Your Involvement
+        </label>
+        <Textarea
+          id="your_involvement"
+          value={formData.your_involvement}
+          onChange={(e) => handleInputChange('your_involvement', e.target.value)}
+          placeholder="Describe your current role, commitment, or relationship with this startup."
+          rows={3}
+          className="w-full"
+          aria-describedby="your_involvement-help"
+        />
+        <p id="your_involvement-help" className="text-sm text-gray-500 mt-1">
+          Describe your current role, commitment, or relationship with this startup.
         </p>
       </div>
 

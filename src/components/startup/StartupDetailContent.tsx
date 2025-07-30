@@ -262,14 +262,14 @@ export function StartupDetailContent({ startup, canViewSensitiveData }: StartupD
         </Card>
       )}
 
-      {/* Your Involvement - Only show if user is the creator */}
-      {user && startup.user_id === user.id && startup.status && (
+      {/* Your Involvement - Only show if user is the creator and has involvement data */}
+      {user && startup.user_id === user.id && startup.your_involvement && (
         <Card>
           <CardHeader>
             <CardTitle>Your Involvement</CardTitle>
           </CardHeader>
           <CardContent>
-            <StatusBadge status={startup.status} />
+            <p className="text-slate-700 whitespace-pre-wrap">{startup.your_involvement}</p>
           </CardContent>
         </Card>
       )}
