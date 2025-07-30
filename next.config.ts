@@ -16,7 +16,6 @@ const nextConfig = {
     ignoreBuildErrors: true, // ⛔ disables typechecking in `next build`
   },
   images: {
-    domains: [process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '').replace('http://', '') || 'lypsundaqtyyzgicraxm.supabase.co'],
     remotePatterns: [
       {
         protocol: 'https',
