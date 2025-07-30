@@ -8,7 +8,6 @@ import {
   Home, 
   Building2, 
   Activity, 
-  Users, 
   Settings,
   ChevronLeft,
   ChevronRight
