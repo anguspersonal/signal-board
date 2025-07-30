@@ -1,5 +1,5 @@
 import { getPageLayout, getAuthenticatedUser } from '@/lib/page-layout'
-import { getUserStartupsWithRatings, getUserSavedStartupsWithRatings } from '@/lib/startups'
+import { getFilteredStartups, getUserSavedStartupsWithRatings } from '@/lib/startups'
 import { DashboardClient } from './DashboardClient'
 
 export default async function DashboardPage() {
@@ -8,7 +8,11 @@ export default async function DashboardPage() {
 
   // Fetch additional data server-side
   const [startups, savedStartups] = await Promise.all([
-    getUserStartupsWithRatings(user.id),
+    getFilteredStartups(user.id, {
+      userOnly: true,
+      sortBy: 'created_at',
+      sortOrder: 'desc'
+    }),
     getUserSavedStartupsWithRatings(user.id)
   ])
 
