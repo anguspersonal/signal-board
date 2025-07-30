@@ -12,7 +12,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react'
-import { useDrawer } from './DrawerContext'
+import { useDrawer } from '@/components/DrawerContext'
 
 interface NavItem {
   name: string

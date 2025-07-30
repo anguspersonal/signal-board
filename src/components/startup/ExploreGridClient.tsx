@@ -123,6 +123,8 @@ export const ExploreGridClient = memo(function ExploreGridClient({ variant, star
 
   // Handle startup card click
   const handleStartupClick = (startupId: string) => {
+    console.log('handleStartupClick', startupId)
+
     if (selectedStartupId === startupId) {
       setSelectedStartupId(null) // Close drawer if clicking same card
     } else {

@@ -1,4 +1,4 @@
-import { DrawerProvider } from './DrawerContext'
+import { DrawerProvider } from '@/components/DrawerContext'
 
 interface AppLayoutProps {
   navigation: React.ReactNode
