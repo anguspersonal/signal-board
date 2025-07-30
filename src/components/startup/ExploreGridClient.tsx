@@ -123,7 +123,11 @@ export const ExploreGridClient = memo(function ExploreGridClient({ variant, star
 
   // Handle startup card click
   const handleStartupClick = (startupId: string) => {
-    setSelectedStartupId(startupId)
+    if (selectedStartupId === startupId) {
+      setSelectedStartupId(null) // Close drawer if clicking same card
+    } else {
+      setSelectedStartupId(startupId) // Open drawer or switch content
+    }
   }
 
   // Handle click away from drawer
@@ -363,6 +367,7 @@ export const ExploreGridClient = memo(function ExploreGridClient({ variant, star
             startups={sortedStartups}
             showOwner={showOwner}
             onSelectStartup={handleStartupClick}
+            selectedStartupId={selectedStartupId}
             className={selectedStartupId ? "lg:grid-cols-1" : ""}
           />
         </div>

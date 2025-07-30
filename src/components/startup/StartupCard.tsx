@@ -29,16 +29,17 @@ import {
 import { StartupWithRatings } from '@/types/startup'
 import { toggleStartupEngagementClient } from '@/lib/startups-client'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
-import { getRatingColor, formatRating, getMockUser } from '@/lib/utils'
+import { getRatingColor, formatRating, getMockUser, cn } from '@/lib/utils'
 
 interface StartupCardProps {
   startup: StartupWithRatings
   showOwner?: boolean
   onUpdate?: () => void
   onClick?: (id: string) => void
+  selected?: boolean
 }
 
-export const StartupCard = memo(function StartupCard({ startup, showOwner = false, onUpdate, onClick }: StartupCardProps) {
+export const StartupCard = memo(function StartupCard({ startup, showOwner = false, onUpdate, onClick, selected }: StartupCardProps) {
   const router = useRouter()
   const [user, setUser] = useState<{ id: string } | null>(getMockUser())
   const [loading, setLoading] = useState(false)
@@ -119,7 +120,15 @@ export const StartupCard = memo(function StartupCard({ startup, showOwner = fals
   }
 
   return (
-    <Card className="cursor-pointer transition-shadow duration-200 w-full hover:shadow-lg" onClick={handleCardClick}>
+    <Card 
+      className={cn(
+        "cursor-pointer transition-shadow duration-200 w-full hover:shadow-lg",
+        {
+          "ring-2 ring-blue-600": selected
+        }
+      )} 
+      onClick={handleCardClick}
+    >
       <CardHeader className="pb-3">
         <div className="flex gap-3 items-start">
           {/* Logo/Icon - Fixed width but responsive */}
@@ -154,7 +163,13 @@ export const StartupCard = memo(function StartupCard({ startup, showOwner = fals
               <div className="flex-shrink-0">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="aria-label flex-shrink-0 h-8 p-0 w-8" aria-label="More options">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="aria-label flex-shrink-0 h-8 p-0 w-8" 
+                      aria-label="More options"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -222,6 +237,7 @@ export const StartupCard = memo(function StartupCard({ startup, showOwner = fals
             rel="noopener noreferrer"
             className="aria-label flex items-center hover:text-blue-700 text-blue-600 text-xs"
             aria-label={`Visit ${startup.name} website`}
+            onClick={(e) => e.stopPropagation()}
           >
             <ExternalLink className="flex-shrink-0 mr-1 h-3 w-3" />
             <span className="truncate">Visit Website</span>
@@ -263,7 +279,10 @@ export const StartupCard = memo(function StartupCard({ startup, showOwner = fals
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleSaveToggle}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleSaveToggle()
+                }}
                 disabled={loading}
                 className="aria-label h-8 p-0 w-8"
                 aria-label={localStartup.saved ? 'Unsave startup' : 'Save startup'}
@@ -271,29 +290,28 @@ export const StartupCard = memo(function StartupCard({ startup, showOwner = fals
                 <Bookmark className={`fill-current h-4 text-blue-600 w-4 ${localStartup.saved ? '' : 'text-slate-400'}`} />
               </Button>
             )}
-            <Button variant="ghost" size="sm" className="aria-label h-8 p-0 w-8" aria-label="Comment on startup">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="aria-label h-8 p-0 w-8" 
+              aria-label="Comment on startup"
+              onClick={(e) => e.stopPropagation()}
+            >
               <MessageCircle className="h-4 text-slate-400 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="aria-label h-8 p-0 w-8" aria-label="Like startup">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="aria-label h-8 p-0 w-8" 
+              aria-label="Like startup"
+              onClick={(e) => e.stopPropagation()}
+            >
               <Heart className="h-4 text-slate-400 w-4" />
             </Button>
           </div>
         </div>
 
-        <Button 
-          onClick={(e) => {
-            e.stopPropagation()
-            if (onClick) {
-              onClick(startup.id)
-            } else {
-              router.push(`/startups/${startup.id}`)
-            }
-          }}
-          variant="outline"
-          className="w-full"
-        >
-          View Details
-        </Button>
+
       </CardContent>
     </Card>
   )

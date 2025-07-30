@@ -10,13 +10,15 @@ interface StartupGridProps {
   showOwner?: boolean
   onSelectStartup?: (id: string) => void
   className?: string
+  selectedStartupId?: string | null
 }
 
 export const StartupGrid = memo(function StartupGrid({ 
   startups, 
   showOwner = false, 
   onSelectStartup,
-  className 
+  className,
+  selectedStartupId
 }: StartupGridProps) {
   if (startups.length === 0) {
     return (
@@ -42,6 +44,7 @@ export const StartupGrid = memo(function StartupGrid({
             startup={startup} 
             showOwner={showOwner}
             onClick={() => onSelectStartup?.(startup.id)}
+            selected={startup.id === selectedStartupId}
           />
         </div>
       ))}
