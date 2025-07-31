@@ -11,6 +11,5 @@ export const fullStartupFields = `
   asks_and_opportunities,
   your_involvement,
   user_id,
-  created_at,
-  users(name)
+  created_at
 ` 
