@@ -2,6 +2,7 @@ import { createClient } from './supabase'
 import { toCreatorStartup, toRatedStartup } from '@/types/helpers'
 import { StartupBase, StartupWithCreator, StartupWithRatings, StartupFilterOptions } from '@/types/startup'
 import { logger } from './logger'
+import { fullStartupFields } from './constants'
 
 // Helper function to fetch average score for a startup
 async function fetchAverageScore(startupId: string): Promise<number> {
@@ -292,20 +293,7 @@ export async function getStartupWithFullDetails(startupId: string, currentUserId
   // First, get the startup data
   const { data: startupData, error: startupError } = await supabase
     .from('startups')
-    .select(`
-      id,
-      name,
-      summary,
-      description,
-      user_id,
-      website_url,
-      tags,
-      logo_url,
-      visibility,
-      created_at,
-      status,
-      asks_and_opportunities
-    `)
+    .select(fullStartupFields)
     .eq('id', startupId)
     .single()
 

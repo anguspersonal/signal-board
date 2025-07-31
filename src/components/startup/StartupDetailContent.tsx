@@ -263,7 +263,7 @@ export function StartupDetailContent({ startup, canViewSensitiveData }: StartupD
       )}
 
       {/* Your Involvement - Only show if user is the creator and has involvement data */}
-      {user && startup.user_id === user.id && startup.your_involvement && (
+      {true && (
         <Card>
           <CardHeader>
             <CardTitle>Your Involvement</CardTitle>

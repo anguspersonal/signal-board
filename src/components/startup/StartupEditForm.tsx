@@ -173,8 +173,8 @@ export const StartupEditForm = memo(function StartupEditForm({ startup, userId }
         console.log('Logo successfully saved to database, marking as uploaded')
       }
 
-      // Redirect to the startup's page
-      router.push(`/startups/${startup.id}`)
+      // Redirect to the startup's page with full page reload to trigger SSR
+      window.location.href = `/startups/${startup.id}`
 
     } catch (err) {
       console.error('Unexpected error:', err)
