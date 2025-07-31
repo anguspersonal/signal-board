@@ -6,8 +6,9 @@ import Image from 'next/image'
 import { StartupWithRatings } from '@/types/startup'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { X, ArrowUpRightFromSquare } from 'lucide-react'
+import { X, ArrowUpRightFromSquare, ArrowLeft } from 'lucide-react'
 import { StartupDetailContent } from './StartupDetailContent'
+import { useDrawer } from '@/components/DrawerContext'
 
 interface StartupDetailDrawerProps {
   startupId: string
@@ -23,6 +24,12 @@ export function StartupDetailDrawer({
   onClose
 }: StartupDetailDrawerProps) {
   const router = useRouter()
+  const { setSelectedStartupId } = useDrawer()
+
+  // Debug logging
+  console.log('StartupDetailDrawer - startupId:', startupId)
+  console.log('StartupDetailDrawer - startup:', startup)
+  console.log('StartupDetailDrawer - canViewSensitiveData:', canViewSensitiveData)
 
   // Handle escape key
   useEffect(() => {
@@ -48,6 +55,15 @@ export function StartupDetailDrawer({
       aria-modal="true"
       aria-labelledby="drawer-title"
     >
+      {/* Top-left arrow button */}
+      <button
+        onClick={() => setSelectedStartupId(null)}
+        className="absolute left-4 top-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none"
+        aria-label="Close Drawer"
+      >
+        <ArrowLeft className="h-5 w-5 text-gray-600" />
+      </button>
+
       {/* Sticky Header */}
       <div className="sticky top-0 z-50 border-b border-gray-200 bg-white p-4">
         <div className="flex items-center justify-between">

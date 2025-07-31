@@ -20,6 +20,11 @@ export const StartupGrid = memo(function StartupGrid({
   className,
   selectedStartupId
 }: StartupGridProps) {
+  // Debug logging
+  console.log('StartupGrid - onSelectStartup function exists:', !!onSelectStartup)
+  console.log('StartupGrid - selectedStartupId:', selectedStartupId)
+  console.log('StartupGrid - startups count:', startups.length)
+
   if (startups.length === 0) {
     return (
       <div className="py-12 text-center">
@@ -43,7 +48,10 @@ export const StartupGrid = memo(function StartupGrid({
           <StartupCard 
             startup={startup} 
             showOwner={showOwner}
-            onClick={() => onSelectStartup?.(startup.id)}
+            onClick={(id) => {
+              console.log('StartupGrid - StartupCard onClick called with id:', id)
+              onSelectStartup?.(id)
+            }}
             selected={startup.id === selectedStartupId}
           />
         </div>

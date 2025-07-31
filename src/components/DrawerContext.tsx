@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, ReactNode, useState } from 'react'
+import { createContext, useContext, ReactNode, useState, useEffect } from 'react'
 
 interface DrawerContextType {
   selectedStartupId: string | null
@@ -16,8 +16,19 @@ interface DrawerProviderProps {
 export function DrawerProvider({ children }: DrawerProviderProps) {
   const [selectedStartupId, setSelectedStartupId] = useState<string | null>(null)
 
+  const handleSetSelectedStartupId = (id: string | null) => {
+    console.log('DrawerProvider - setSelectedStartupId called with:', id)
+    if (id === null) console.trace('Trace: Who called setSelectedStartupId(null)?')
+    setSelectedStartupId(id)
+  }
+
+  // Debug logging for state changes - client-only
+  useEffect(() => {
+    console.log('DrawerProvider - selectedStartupId state:', selectedStartupId)
+  }, [selectedStartupId])
+
   return (
-    <DrawerContext.Provider value={{ selectedStartupId, setSelectedStartupId }}>
+    <DrawerContext.Provider value={{ selectedStartupId, setSelectedStartupId: handleSetSelectedStartupId }}>
       {children}
     </DrawerContext.Provider>
   )

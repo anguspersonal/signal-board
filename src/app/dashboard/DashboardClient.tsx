@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Slider } from '@/components/ui/slider'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Search, Filter, Plus, X } from 'lucide-react'
+import { Search, Filter, Plus, X, Play, Pause, XCircle, CheckCircle, Package } from 'lucide-react'
 import { getDisplayName } from '@/lib/profile'
 import { StartupWithRatings } from '@/types/startup'
 import { UserProfile } from '@/lib/profile'
@@ -146,7 +146,66 @@ export const DashboardClient = memo(function DashboardClient({
   })
 
   const visibilityOptions = ['public', 'private', 'invite-only']
-  const statusOptions = ['active', 'paused', 'closed']
+  
+  type StatusConfig = {
+    value: string
+    label: string
+    definition: string
+    icon: React.ComponentType<{ className?: string }>
+    color: string
+    bgColor: string
+  }
+  
+  const statusConfig: StatusConfig[] = [
+    { 
+      value: 'Discovery', 
+      label: 'Discovery', 
+      definition: 'Exploring the idea and market opportunity',
+      icon: Search,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50'
+    },
+    { 
+      value: 'Active', 
+      label: 'Active', 
+      definition: 'Currently working on and pursuing this startup',
+      icon: Play,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50'
+    },
+    { 
+      value: 'Back-burner', 
+      label: 'Back-burner', 
+      definition: 'Paused temporarily but may resume later',
+      icon: Pause,
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-50'
+    },
+    { 
+      value: 'Not Pursuing', 
+      label: 'Not Pursuing', 
+      definition: 'Decided not to move forward with this startup',
+      icon: XCircle,
+      color: 'text-red-600',
+      bgColor: 'bg-red-50'
+    },
+    { 
+      value: 'Exited', 
+      label: 'Exited', 
+      definition: 'Successfully sold, acquired, or IPO\'d',
+      icon: CheckCircle,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50'
+    },
+    { 
+      value: 'Archived', 
+      label: 'Archived', 
+      definition: 'Completed or closed down the startup',
+      icon: Package,
+      color: 'text-gray-600',
+      bgColor: 'bg-gray-50'
+    }
+  ]
 
   return (
     <div className="space-y-8">
@@ -245,25 +304,39 @@ export const DashboardClient = memo(function DashboardClient({
               {/* Status Filter */}
               <div className="space-y-2">
                 <Label>Status</Label>
-                <div className="space-y-2">
-                  {statusOptions.map(status => (
-                    <div key={status} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`status-${status}`}
-                        checked={selectedStatus.includes(status)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            handleStatusChange([...selectedStatus, status])
-                          } else {
-                            handleStatusChange(selectedStatus.filter(s => s !== status))
-                          }
-                        }}
-                      />
-                      <Label htmlFor={`status-${status}`} className="text-sm font-normal capitalize">
-                        {status}
-                      </Label>
-                    </div>
-                  ))}
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {statusConfig.map((status) => {
+                    const IconComponent = status.icon
+                    return (
+                      <div key={status.value} className="flex items-start space-x-3 p-2 rounded-md hover:bg-muted/50">
+                        <Checkbox
+                          id={`status-${status.value}`}
+                          checked={selectedStatus.includes(status.value)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              handleStatusChange([...selectedStatus, status.value])
+                            } else {
+                              handleStatusChange(selectedStatus.filter(s => s !== status.value))
+                            }
+                          }}
+                          className="mt-1"
+                        />
+                        <div className="flex items-start gap-2 flex-1">
+                          <div className={`p-1.5 rounded-md ${status.bgColor} flex-shrink-0`}>
+                            <IconComponent className={`h-3 w-3 ${status.color}`} />
+                          </div>
+                          <div className="flex flex-col items-start flex-1 min-w-0">
+                            <Label htmlFor={`status-${status.value}`} className={`text-sm font-medium ${status.color} cursor-pointer`}>
+                              {status.label}
+                            </Label>
+                            <span className="text-xs text-muted-foreground mt-0.5 leading-tight">
+                              {status.definition}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
 

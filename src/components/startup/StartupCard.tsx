@@ -30,6 +30,7 @@ import { StartupWithRatings } from '@/types/startup'
 import { toggleStartupEngagementClient } from '@/lib/startups-client'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { getRatingColor, formatRating, getMockUser, cn } from '@/lib/utils'
+import { useDrawer } from '@/components/DrawerContext'
 
 interface StartupCardProps {
   startup: StartupWithRatings
@@ -41,6 +42,7 @@ interface StartupCardProps {
 
 export const StartupCard = memo(function StartupCard({ startup, showOwner = false, onUpdate, onClick, selected }: StartupCardProps) {
   const router = useRouter()
+  const { setSelectedStartupId } = useDrawer()
   const [user, setUser] = useState<{ id: string } | null>(getMockUser())
   const [loading, setLoading] = useState(false)
   const [localStartup, setLocalStartup] = useState(startup)
@@ -109,12 +111,17 @@ export const StartupCard = memo(function StartupCard({ startup, showOwner = fals
   }
 
   const handleCardClick = () => {
+    console.log('StartupCard - handleCardClick called for startup:', startup.id)
+    console.log('StartupCard - onClick function exists:', !!onClick)
+    
     if (onClick) {
+      console.log('StartupCard - calling onClick with startup.id:', startup.id)
       onClick(startup.id)
     } else if (isDesktop) {
-      // Fallback to router navigation if no onClick provided
-      router.push(`/startups/${startup.id}`)
+      // Open drawer on desktop if no onClick provided
+      setSelectedStartupId(startup.id)
     } else {
+      // Navigate to detail page on mobile
       router.push(`/startups/${startup.id}`)
     }
   }

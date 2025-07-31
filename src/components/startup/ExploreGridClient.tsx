@@ -33,6 +33,10 @@ export const ExploreGridClient = memo(function ExploreGridClient({ variant, star
   const [user, setUser] = useState<{ id: string } | null>(null)
   const { selectedStartupId, setSelectedStartupId } = useDrawer()
 
+  // Debug logging for context
+  console.log('ExploreGridClient - selectedStartupId:', selectedStartupId)
+  console.log('ExploreGridClient - setSelectedStartupId function:', setSelectedStartupId)
+
   // Get the authenticated user
   useEffect(() => {
     const getUser = async () => {
@@ -121,20 +125,22 @@ export const ExploreGridClient = memo(function ExploreGridClient({ variant, star
   // Get the selected startup
   const selectedStartup = selectedStartupId ? startups.find(s => s.id === selectedStartupId) : null
 
+  // Debug logging for selected startup
+  console.log('ExploreGridClient - selectedStartup:', selectedStartup)
+  console.log('ExploreGridClient - should render drawer:', !!selectedStartupId && !!selectedStartup)
+
   // Handle startup card click
   const handleStartupClick = (startupId: string) => {
-    console.log('handleStartupClick', startupId)
+    console.log('handleStartupClick called with startupId:', startupId)
+    console.log('Current selectedStartupId:', selectedStartupId)
 
     if (selectedStartupId === startupId) {
+      console.log('Closing drawer - same startup clicked')
       setSelectedStartupId(null) // Close drawer if clicking same card
     } else {
+      console.log('Opening drawer - new startup selected')
       setSelectedStartupId(startupId) // Open drawer or switch content
     }
-  }
-
-  // Handle click away from drawer
-  const handleClickAway = () => {
-    setSelectedStartupId(null)
   }
 
   return (
@@ -355,16 +361,13 @@ export const ExploreGridClient = memo(function ExploreGridClient({ variant, star
 
       {/* Main Content with Grid and Drawer */}
       <div className="relative">
-        {/* Click-away overlay for drawer */}
-        {selectedStartupId && (
-          <div 
-            className="fixed inset-0 z-30 bg-black bg-opacity-25 md:hidden"
-            onClick={handleClickAway}
-          />
-        )}
-
+        {/* Debug: Show current drawer ID */}
+        <p className="text-sm text-gray-500 mb-2">
+          Current Drawer ID: {selectedStartupId || 'None'}
+        </p>
+        
         {/* Startups Grid */}
-        <div onClick={handleClickAway}>
+        <div>
           <StartupGrid
             startups={sortedStartups}
             showOwner={showOwner}
@@ -376,12 +379,15 @@ export const ExploreGridClient = memo(function ExploreGridClient({ variant, star
 
         {/* Drawer */}
         {selectedStartupId && selectedStartup && (
-          <StartupDetailDrawer
-            startupId={selectedStartupId}
-            startup={selectedStartup}
-            canViewSensitiveData={selectedStartup.visibility === 'public' || selectedStartup.user_id === user?.id}
-            onClose={() => setSelectedStartupId(null)}
-          />
+          <>
+            {console.log('ExploreGridClient - Rendering StartupDetailDrawer with:', { selectedStartupId, startup: selectedStartup })}
+            <StartupDetailDrawer
+              startupId={selectedStartupId}
+              startup={selectedStartup}
+              canViewSensitiveData={selectedStartup.visibility === 'public' || selectedStartup.user_id === user?.id}
+              onClose={() => setSelectedStartupId(null)}
+            />
+          </>
         )}
       </div>
     </div>
